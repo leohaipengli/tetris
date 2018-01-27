@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/A1_code.dir/include/InitShader.cpp.o CMakeFiles/A1_code.dir/Gasket.cpp.o  -o A1_code 
