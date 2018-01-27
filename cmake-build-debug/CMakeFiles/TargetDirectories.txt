@@ -1,0 +1,3 @@
+/home/leo/cmpt_361/a1/A1-code/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/leo/cmpt_361/a1/A1-code/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/leo/cmpt_361/a1/A1-code/cmake-build-debug/CMakeFiles/A1_code.dir
