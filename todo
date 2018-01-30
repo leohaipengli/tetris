@@ -1,0 +1,7 @@
+1. use two buffers:
+    one for grid (static)
+    one for bricks (dynamic)
+
+2. use different shader:
+    dark color for grids
+    differeny color for different bricks
