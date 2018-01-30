@@ -1,40 +1,71 @@
-// Two-Dimensional Sierpinski Gasket       
-// Generated using randomly selected vertices and bisection
-
+#include<iostream>
+#include<vector>
 #include "include/Angel.h"
 
+// #define DEBUG
 
-//----------------------------------------------------------------------------
+using namespace std;
+
+// define the number & size of the grid:
+const int NUM_ROWS = 3;
+const int NUM_COLS = 2;
+const int GRID_SIZE = 300;
 
 void myInit(void) {
-    // vec2 points[NumPoints];
-
-    // // Specifiy the vertices for a triangle
-    // vec2 vertices[3] = {
-    //     vec2( -1.0, -1.0 ), vec2( 0.0, 1.0 ), vec2( 1.0, -1.0 )
-    // };
-
-    // // Select an arbitrary initial point inside of the triangle
-    // points[0] = vec2( 0.25, 0.50 );
-
-    // // compute and store N-1 new points
-    // for ( int i = 1; i < NumPoints; ++i ) {
-    //     int j = rand() % 3;   // pick a vertex at random
-
-    //     // Compute the point halfway between the selected vertex
-    //     //   and the previous point
-    //     points[i] = ( points[i - 1] + vertices[j] ) / 2.0;
-    // }
 
     // Create a vertex array object
     GLuint vao;
     glGenVertexArrays( 1, &vao );
     glBindVertexArray( vao );
 
+    vector<vec3> grid_points;
+
+    vec2 tps[4];
+
+    // insert vertical grid points
+#ifdef DEBUG
+    tps[0] = vec2(0, 0);
+    tps[1] = vec2(0.1, 0.1);
+    tps[2] = vec2(0.2, 0.2);
+    tps[3] = vec2(0.3, 0.3);
+    grid_points.push_back(vec3(-0.5f, -0.5f, 0));
+    grid_points.push_back(vec3(1.0f, -1.0f, 0));
+    grid_points.push_back(vec3(0.0f,  1.0f, 0));
+    grid_points.push_back(vec3(1.0f,  0.0f, 0));
+#else
+    for(int i = 1; i < NUM_COLS; i++) {
+        grid_points.push_back(vec3((float)i/NUM_COLS, -1.0, 0));
+        grid_points.push_back(vec3((float)i/NUM_COLS, 1.0, 0));
+    }
+    // insert horizontal grid points
+    for(int i = 1; i < NUM_ROWS; i++) {
+        grid_points.push_back(vec3(-1.0, (float)i/NUM_ROWS, 0));
+        grid_points.push_back(vec3(1.0, (float)i/NUM_ROWS, 0));
+    }
+#endif
+
+
+    // vec3 points[NumPoints];
+
+#ifdef DEBUG
+
+    // ???
+    // for(vec2 grid_point: grid_points) {
+    //     cout << *grid_point << endl;
+    // }
+    for(vector<vec3>::iterator grid_point = grid_points.begin(); grid_point != grid_points.end(); grid_point++) {
+        cout << *grid_point << endl;
+    }
+#endif
+
+
+
+    
     static const GLfloat g_vertex_buffer_data[] = {
-    -1.0f, -1.0f, 0.0f,
-    1.0f, -1.0f, 0.0f,
-    0.0f,  1.0f, 0.0f,
+    -1.0f, -1.0f, 0,
+    1.0f, -1.0f, 0,
+    0.0f,  1.0f, 0, 
+    1.0f,  0.0f, 0,
     };
 
     // This will identify our vertex buffer
@@ -44,7 +75,9 @@ void myInit(void) {
     // The following commands will talk about our 'vertexbuffer' buffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     // Give our vertices to OpenGL.
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, grid_points.size() * sizeof(vec3), &grid_points.front(), GL_STATIC_DRAW);
+    // glBufferData(GL_ARRAY_BUFFER, tps.size() * sizeof(float), &tps.front(), GL_STATIC_DRAW);
 
     // // Create and initialize a buffer object
     // GLuint buffer;
@@ -73,16 +106,14 @@ void myInit(void) {
 
 void display(void) {
     glClear( GL_COLOR_BUFFER_BIT );     // clear the window
-    glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
+    glDrawArrays(GL_LINES, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangle
     // glDrawArrays( GL_POINTS, 0, NumPoints );    // draw the points
     glFlush();
 }
 
 //----------------------------------------------------------------------------
 
-void
-keyboard( unsigned char key, int x, int y )
-{
+void keyboard(unsigned char key, int x, int y) {
     switch ( key ) {
     case 033:
         exit( EXIT_SUCCESS );
@@ -92,12 +123,10 @@ keyboard( unsigned char key, int x, int y )
 
 //----------------------------------------------------------------------------
 
-int
-main( int argc, char **argv )
-{
+int main(int argc, char **argv) {
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_RGBA );
-    glutInitWindowSize( 400, 800 );
+    glutInitWindowSize( NUM_COLS * GRID_SIZE, NUM_ROWS * GRID_SIZE );
 
     // If you are using freeglut, the next two lines will check if 
     // the code is truly 3.2. Otherwise, comment them out
