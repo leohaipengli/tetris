@@ -26,15 +26,8 @@ void myInit(void) {
     glGenVertexArrays( 1, &vao );
     glBindVertexArray( vao );
 
-
-    vec2 tps[4];
-
     // insert vertical grid points
 #ifdef DEBUG
-    tps[0] = vec2(0, 0);
-    tps[1] = vec2(0.1, 0.1);
-    tps[2] = vec2(0.2, 0.2);
-    tps[3] = vec2(0.3, 0.3);
     grid_points.push_back(vec3(-0.5f, -0.5f, 0));
     grid_points.push_back(vec3(1.0f, -1.0f, 0));
     grid_points.push_back(vec3(0.0f,  1.0f, 0));
@@ -52,15 +45,9 @@ void myInit(void) {
 #endif
 
 
-    // vec3 points[NumPoints];
 
 #ifdef DEBUG
-
-    // ???
-    // for(vec2 grid_point: grid_points) {
-    //     cout << *grid_point << endl;
-    // }
-    for(vector<vec3>::iterator grid_point = grid_points.begin(); grid_point != grid_points.end(); grid_point++) {
+    for(auto grid_point = grid_points.begin(); grid_point != grid_points.end(); grid_point++) {
         cout << *grid_point << endl;
     }
 #endif
@@ -69,13 +56,12 @@ void myInit(void) {
     GLuint vertexbuffer;
     // Generate 1 buffer, put the resulting identifier in vertexbuffer
     glGenBuffers(1, &vertexbuffer);
-    // The following commands will talk about our 'vertexbuffer' buffer
+    // make the buffer 'active' by binding
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    // Give our vertices to OpenGL.
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+    // send active buffer data
     glBufferData(GL_ARRAY_BUFFER, grid_points.size() * sizeof(vec3), &grid_points.front(), GL_STATIC_DRAW);
 
-    // // Create and initialize a buffer object
+    // Create and initialize a buffer object
     // GLuint buffer;
     // glGenBuffers( 1, &buffer );
     // glBindBuffer( GL_ARRAY_BUFFER, buffer );
