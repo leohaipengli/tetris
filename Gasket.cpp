@@ -9,7 +9,7 @@ using namespace std;
 // define the number & size of the grid:
 const int NUM_ROWS = 20;
 const int NUM_COLS = 10;
-const int GRID_SIZE = 30;
+const int GRID_SIZE = 40;
 
 vector<vec3> grid_points;
 
