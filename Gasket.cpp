@@ -7,9 +7,17 @@
 using namespace std;
 
 // define the number & size of the grid:
-const int NUM_ROWS = 3;
-const int NUM_COLS = 2;
-const int GRID_SIZE = 300;
+const int NUM_ROWS = 20;
+const int NUM_COLS = 10;
+const int GRID_SIZE = 30;
+
+vector<vec3> grid_points;
+
+inline GLfloat toGLCoordinate(float in) {
+    // in: float 0 ~ 1
+    // out: -1 ~ 1
+    return (GLfloat)in * 2 - 1;
+}
 
 void myInit(void) {
 
@@ -18,7 +26,6 @@ void myInit(void) {
     glGenVertexArrays( 1, &vao );
     glBindVertexArray( vao );
 
-    vector<vec3> grid_points;
 
     vec2 tps[4];
 
@@ -34,13 +41,13 @@ void myInit(void) {
     grid_points.push_back(vec3(1.0f,  0.0f, 0));
 #else
     for(int i = 1; i < NUM_COLS; i++) {
-        grid_points.push_back(vec3((float)i/NUM_COLS, -1.0, 0));
-        grid_points.push_back(vec3((float)i/NUM_COLS, 1.0, 0));
+        grid_points.push_back(vec3(toGLCoordinate((float)i/NUM_COLS), -1.0, 0));
+        grid_points.push_back(vec3(toGLCoordinate((float)i/NUM_COLS), 1.0, 0));
     }
     // insert horizontal grid points
     for(int i = 1; i < NUM_ROWS; i++) {
-        grid_points.push_back(vec3(-1.0, (float)i/NUM_ROWS, 0));
-        grid_points.push_back(vec3(1.0, (float)i/NUM_ROWS, 0));
+        grid_points.push_back(vec3(-1.0, toGLCoordinate((float)i/NUM_ROWS), 0));
+        grid_points.push_back(vec3(1.0, toGLCoordinate((float)i/NUM_ROWS), 0));
     }
 #endif
 
@@ -58,16 +65,6 @@ void myInit(void) {
     }
 #endif
 
-
-
-    
-    static const GLfloat g_vertex_buffer_data[] = {
-    -1.0f, -1.0f, 0,
-    1.0f, -1.0f, 0,
-    0.0f,  1.0f, 0, 
-    1.0f,  0.0f, 0,
-    };
-
     // This will identify our vertex buffer
     GLuint vertexbuffer;
     // Generate 1 buffer, put the resulting identifier in vertexbuffer
@@ -77,7 +74,6 @@ void myInit(void) {
     // Give our vertices to OpenGL.
     // glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
     glBufferData(GL_ARRAY_BUFFER, grid_points.size() * sizeof(vec3), &grid_points.front(), GL_STATIC_DRAW);
-    // glBufferData(GL_ARRAY_BUFFER, tps.size() * sizeof(float), &tps.front(), GL_STATIC_DRAW);
 
     // // Create and initialize a buffer object
     // GLuint buffer;
@@ -106,7 +102,7 @@ void myInit(void) {
 
 void display(void) {
     glClear( GL_COLOR_BUFFER_BIT );     // clear the window
-    glDrawArrays(GL_LINES, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangle
+    glDrawArrays(GL_LINES, 0, grid_points.size()); // Starting from vertex 0; 3 vertices total -> 1 triangle
     // glDrawArrays( GL_POINTS, 0, NumPoints );    // draw the points
     glFlush();
 }
