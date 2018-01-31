@@ -7,9 +7,9 @@
 using namespace std;
 
 // define the number & size of the grid:
-const int NUM_ROWS = 2;
-const int NUM_COLS = 2;
-const int GRID_SIZE = 300;
+const int NUM_ROWS = 20;
+const int NUM_COLS = 10;
+const int GRID_SIZE = 40;
 const vec3 background_color = vec3(0, 0, 0);
 
 vector<vec3> grid_points;
@@ -26,7 +26,7 @@ void generateColor() {
     // num of points: 6 (for each brick) * NUM_ROWS * NUM_COLS
     brick_colors.resize(6 * NUM_COLS * NUM_ROWS);
     for(int i = 0; i < 6 * NUM_ROWS * NUM_COLS; i++) {
-        brick_colors[i] = vec3((double) rand() / (RAND_MAX), (double) rand() / (RAND_MAX), (double) rand() / (RAND_MAX)); // red
+        brick_colors[i] = vec3((float) rand() / (RAND_MAX), (float) rand() / (RAND_MAX), (float) rand() / (RAND_MAX)); 
     }
 }
 void generateBrick() {
@@ -36,7 +36,6 @@ void generateBrick() {
     for(int i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         rem = i % NUM_COLS;
         quo = i / NUM_COLS;
-        cout << "rem: " << rem << " quo: " << quo << endl;
         brick_points[6*i] = vec3(toGLCoordinate((float)rem/NUM_COLS), toGLCoordinate((float)quo/NUM_ROWS), 0);
         brick_points[6*i+1] = vec3(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
         brick_points[6*i+2] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS), 0);
@@ -53,6 +52,7 @@ void myInit(void) {
     glBindVertexArray( vao );
 
 #ifdef DEBUG
+    srand(time(NULL));
     generateBrick();
     generateColor();
 #else
@@ -71,9 +71,9 @@ void myInit(void) {
 
 
 #ifdef DEBUG
-    for(auto grid_point = brick_colors.begin(); grid_point != brick_colors.end(); grid_point++) {
-        cout << *grid_point << endl;
-    }
+    // for(auto grid_point = brick_colors.begin(); grid_point != brick_colors.end(); grid_point++) {
+    //     cout << *grid_point << endl;
+    // }
 #endif
     // This will identify our grid buffer
     GLuint grid_buffer;
@@ -97,39 +97,11 @@ void myInit(void) {
     glEnableVertexAttribArray( 0 );
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0,
                            BUFFER_OFFSET(0) );
-
-
-    static const GLfloat g_color_buffer_data[] = {
-    0.014f,  0.184f,  0.576f,
-    0.771f,  0.328f,  0.970f,
-    0.406f,  0.615f,  0.116f,
-    0.676f,  0.977f,  0.133f,
-    0.971f,  0.572f,  0.833f,
-    0.140f,  0.616f,  0.489f,
-    0.997f,  0.513f,  0.064f,
-    0.945f,  0.719f,  0.592f,
-    0.543f,  0.021f,  0.978f,
-    0.279f,  0.317f,  0.505f,
-    0.167f,  0.620f,  0.077f,
-    0.347f,  0.857f,  0.137f,
-    0.055f,  0.953f,  0.042f,
-    0.714f,  0.505f,  0.345f,
-    0.783f,  0.290f,  0.734f,
-    0.722f,  0.645f,  0.174f,
-    0.302f,  0.455f,  0.848f,
-    0.225f,  0.587f,  0.040f,
-    0.517f,  0.713f,  0.338f,
-    0.053f,  0.959f,  0.120f,
-    0.393f,  0.621f,  0.362f,
-    0.673f,  0.211f,  0.457f,
-    0.820f,  0.883f,  0.371f,
-    0.982f,  0.099f,  0.879f
-    };
     // color buffer data
     GLuint colorbuffer;
     glGenBuffers(1, &colorbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(brick_colors) * sizeof(vec3), &brick_colors.front(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, brick_colors.size() * sizeof(vec3), &brick_colors.front(), GL_STATIC_DRAW);
     // glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 
     // 2nd attribute buffer : colors
