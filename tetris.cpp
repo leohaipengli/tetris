@@ -64,10 +64,12 @@ void myInit(void) {
     glGenVertexArrays( 1, &vao );
     glBindVertexArray( vao );
 
-#ifdef DEBUG
+    // generate brick & color data
     srand(time(NULL));
     generateBrick();
     generateColor();
+#ifdef DEBUG
+    // test set color
     setBrickColor(0, 0, vec3(1,0,0));
 #else
     // insert vertical grid points
