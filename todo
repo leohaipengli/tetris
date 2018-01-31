@@ -1,4 +1,4 @@
-1. use two buffers:
+(not important now since we don't need grid lines now)1. use two buffers:
     one for grid (static)
     one for bricks (dynamic)
 

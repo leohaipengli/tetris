@@ -44,6 +44,19 @@ void generateBrick() {
         brick_points[6*i+5] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
     }
 }
+
+void setBrickColor(int row, int col, vec3 color_vector) {
+    if(row < NUM_ROWS && col < NUM_COLS) {
+        int i = 6 * (row * NUM_COLS + col);
+        for(int j = 0; j < 6; j++) {
+            brick_colors[i+j] = color_vector;
+        }
+
+    } else {
+        cout << "setBrickColor(): ignore invalid position\n";
+    }
+}
+
 void myInit(void) {
 
     // Create a vertex array object
@@ -55,6 +68,7 @@ void myInit(void) {
     srand(time(NULL));
     generateBrick();
     generateColor();
+    setBrickColor(0, 0, vec3(1,0,0));
 #else
     // insert vertical grid points
     for(int i = 1; i < NUM_COLS; i++) {
