@@ -15,10 +15,18 @@ const vec3 background_color = vec3(0, 0, 0);
 vector<vec3> grid_points;
 vector<vec3> brick_points;
 vector<vec3> brick_colors;
+
 inline GLfloat toGLCoordinate(float in) {
     // in: float 0 ~ 1
     // out: -1 ~ 1
     return (GLfloat)in * 2 - 1;
+}
+
+inline int vec2ToInt(vec2 coordinate) {
+    return coordinate[0] * NUM_COLS + coordinate[1];
+}
+inline vec2 intToVec2(int coordinate) {
+    return vec2(coordinate / NUM_COLS, coordinate % NUM_COLS);
 }
 
 void generateColor() {
@@ -26,7 +34,7 @@ void generateColor() {
     // num of points: 6 (for each brick) * NUM_ROWS * NUM_COLS
     brick_colors.resize(6 * NUM_COLS * NUM_ROWS);
     for(int i = 0; i < 6 * NUM_ROWS * NUM_COLS; i++) {
-        brick_colors[i] = vec3((float) rand() / (RAND_MAX), (float) rand() / (RAND_MAX), (float) rand() / (RAND_MAX)); 
+        brick_colors[i] = vec3((float) rand() / (RAND_MAX), (float) rand() / (RAND_MAX), (float) rand() / (RAND_MAX)) / 5; 
     }
 }
 void generateBrick() {
@@ -45,9 +53,18 @@ void generateBrick() {
     }
 }
 
-void setBrickColor(int row, int col, vec3 color_vector) {
-    if(row < NUM_ROWS && col < NUM_COLS) {
-        int i = 6 * (row * NUM_COLS + col);
+vec3 getBrickColor(vec2 position) {
+    // assume the position is valid
+    // return the color (vec3) of one brick
+    int i = 6 * vec2ToInt(position);
+    // assume the 6 points of a brick has only one color
+    // return the color of the first 
+    return brick_colors[i];
+}
+
+void setBrickColor(vec2 position, vec3 color_vector) {
+    int i = 6 * vec2ToInt(position);
+    if(i < NUM_COLS * NUM_ROWS && i >= 0) {
         for(int j = 0; j < 6; j++) {
             brick_colors[i+j] = color_vector;
         }
@@ -56,6 +73,33 @@ void setBrickColor(int row, int col, vec3 color_vector) {
         cout << "setBrickColor(): ignore invalid position\n";
     }
 }
+
+void moveBrickColor(vec2 position, char direction) {
+    // assume the position is always valid
+    // the position checking is done by other functions
+    vec3 color = getBrickColor(position);
+    vec2 new_position;
+    switch(direction) {
+        case 'u':
+            new_position = vec2(position[0] + 1, position[1]);
+            break;
+        case 'd':
+            new_position = vec2(position[0] - 1, position[1]);
+            break;
+        case 'l':
+            new_position = vec2(position[0], position[1] - 1);
+            break;
+        case 'r':
+            new_position = vec2(position[0], position[1] + 1);
+            break;
+    }
+    // cout << "old position: " << position << endl;
+    // cout << "new position: " << new_position << endl;
+    setBrickColor(position, background_color);
+    setBrickColor(new_position, color);
+}
+
+
 
 void myInit(void) {
 
@@ -70,7 +114,11 @@ void myInit(void) {
     generateColor();
 #ifdef DEBUG
     // test set color
-    setBrickColor(0, 0, vec3(1,0,0));
+    setBrickColor(vec2(1, 1), vec3(1,0,0));
+    moveBrickColor(vec2(1, 1), 'u');
+    moveBrickColor(vec2(2, 1), 'd');
+    moveBrickColor(vec2(1, 1), 'l');
+    moveBrickColor(vec2(1, 0), 'r');
 #else
     // insert vertical grid points
     for(int i = 1; i < NUM_COLS; i++) {
@@ -148,8 +196,25 @@ void display(void) {
 
 void keyboard(unsigned char key, int x, int y) {
     switch ( key ) {
-    case 033:
+    case 0x1b:
+        // cout << "esc\n";
         exit( EXIT_SUCCESS );
+        break;
+    case 'w':
+        //do something here
+        cout << "up\n";
+        break;
+    case 's':
+        //do something here
+        cout << "down\n";
+        break;
+    case 'a':
+        //do something here
+        cout << "left\n";
+        break;
+    case 'd':
+        //do something here
+        cout << "right\n";
         break;
     }
 }
