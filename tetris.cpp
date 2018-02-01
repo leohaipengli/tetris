@@ -1,103 +1,20 @@
 #include<iostream>
 #include<vector>
 #include "include/Angel.h"
+#include "include/config.h"
+#include "include/ground.h"
 
 #define DEBUG
 
 using namespace std;
 
-// define the number & size of the grid:
-const int NUM_ROWS = 20;
-const int NUM_COLS = 10;
-const int GRID_SIZE = 40;
-const vec3 background_color = vec3(0, 0, 0);
+Ground ground;
 
-vector<vec3> grid_points;
-vector<vec3> brick_points;
-vector<vec3> brick_colors;
 
-inline GLfloat toGLCoordinate(float in) {
-    // in: float 0 ~ 1
-    // out: -1 ~ 1
-    return (GLfloat)in * 2 - 1;
-}
 
-inline int vec2ToInt(vec2 coordinate) {
-    return coordinate[0] * NUM_COLS + coordinate[1];
-}
-inline vec2 intToVec2(int coordinate) {
-    return vec2(coordinate / NUM_COLS, coordinate % NUM_COLS);
-}
 
-void generateColor() {
 
-    // num of points: 6 (for each brick) * NUM_ROWS * NUM_COLS
-    brick_colors.resize(6 * NUM_COLS * NUM_ROWS);
-    for(int i = 0; i < 6 * NUM_ROWS * NUM_COLS; i++) {
-        brick_colors[i] = vec3((float) rand() / (RAND_MAX), (float) rand() / (RAND_MAX), (float) rand() / (RAND_MAX)) / 5; 
-    }
-}
-void generateBrick() {
-    // num of points: 6 (for each brick) * NUM_ROWS * NUM_COLS
-    brick_points.resize(6 * NUM_COLS * NUM_ROWS);
-    int rem = 0, quo = 0;
-    for(int i = 0; i < NUM_ROWS * NUM_COLS; i++) {
-        rem = i % NUM_COLS;
-        quo = i / NUM_COLS;
-        brick_points[6*i] = vec3(toGLCoordinate((float)rem/NUM_COLS), toGLCoordinate((float)quo/NUM_ROWS), 0);
-        brick_points[6*i+1] = vec3(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
-        brick_points[6*i+2] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS), 0);
-        brick_points[6*i+3] = vec3(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
-        brick_points[6*i+4] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS), 0);
-        brick_points[6*i+5] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
-    }
-}
 
-vec3 getBrickColor(vec2 position) {
-    // assume the position is valid
-    // return the color (vec3) of one brick
-    int i = 6 * vec2ToInt(position);
-    // assume the 6 points of a brick has only one color
-    // return the color of the first 
-    return brick_colors[i];
-}
-
-void setBrickColor(vec2 position, vec3 color_vector) {
-    int i = 6 * vec2ToInt(position);
-    if(i < NUM_COLS * NUM_ROWS && i >= 0) {
-        for(int j = 0; j < 6; j++) {
-            brick_colors[i+j] = color_vector;
-        }
-
-    } else {
-        cout << "setBrickColor(): ignore invalid position\n";
-    }
-}
-
-void moveBrickColor(vec2 position, char direction) {
-    // assume the position is always valid
-    // the position checking is done by other functions
-    vec3 color = getBrickColor(position);
-    vec2 new_position;
-    switch(direction) {
-        case 'u':
-            new_position = vec2(position[0] + 1, position[1]);
-            break;
-        case 'd':
-            new_position = vec2(position[0] - 1, position[1]);
-            break;
-        case 'l':
-            new_position = vec2(position[0], position[1] - 1);
-            break;
-        case 'r':
-            new_position = vec2(position[0], position[1] + 1);
-            break;
-    }
-    // cout << "old position: " << position << endl;
-    // cout << "new position: " << new_position << endl;
-    setBrickColor(position, background_color);
-    setBrickColor(new_position, color);
-}
 
 
 
@@ -109,16 +26,13 @@ void myInit(void) {
     glBindVertexArray( vao );
 
     // generate brick & color data
-    srand(time(NULL));
-    generateBrick();
-    generateColor();
 #ifdef DEBUG
     // test set color
-    setBrickColor(vec2(1, 1), vec3(1,0,0));
-    moveBrickColor(vec2(1, 1), 'u');
-    moveBrickColor(vec2(2, 1), 'd');
-    moveBrickColor(vec2(1, 1), 'l');
-    moveBrickColor(vec2(1, 0), 'r');
+    ground.setBrickColor(vec2(1, 1), vec3(1,0,0));
+    ground.moveBrickColor(vec2(1, 1), 'u');
+    ground.moveBrickColor(vec2(2, 1), 'd');
+    ground.moveBrickColor(vec2(1, 1), 'l');
+    ground.moveBrickColor(vec2(1, 0), 'r');
 #else
     // insert vertical grid points
     for(int i = 1; i < NUM_COLS; i++) {
@@ -135,7 +49,7 @@ void myInit(void) {
 
 
 #ifdef DEBUG
-    // for(auto grid_point = brick_colors.begin(); grid_point != brick_colors.end(); grid_point++) {
+    // for(auto grid_point = ground.brick_colors.begin(); grid_point != ground.brick_colors.end(); grid_point++) {
     //     cout << *grid_point << endl;
     // }
 #endif
@@ -146,7 +60,7 @@ void myInit(void) {
     // make the buffer 'active' by binding
     glBindBuffer(GL_ARRAY_BUFFER, grid_buffer);
     // send active buffer data
-    glBufferData(GL_ARRAY_BUFFER, brick_points.size() * sizeof(vec3), &brick_points.front(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, ground.brick_points.size() * sizeof(vec3), &ground.brick_points.front(), GL_STATIC_DRAW);
 
     // Load shaders and use the resulting shader program
     GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
@@ -165,7 +79,7 @@ void myInit(void) {
     GLuint colorbuffer;
     glGenBuffers(1, &colorbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glBufferData(GL_ARRAY_BUFFER, brick_colors.size() * sizeof(vec3), &brick_colors.front(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, ground.brick_colors.size() * sizeof(vec3), &ground.brick_colors.front(), GL_STATIC_DRAW);
     // glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 
     // 2nd attribute buffer : colors
@@ -187,7 +101,7 @@ void myInit(void) {
 
 void display(void) {
     glClear( GL_COLOR_BUFFER_BIT );     // clear the window
-    glDrawArrays(GL_TRIANGLES, 0, brick_points.size()); // Starting from vertex 0; 3 vertices total -> 1 triangle
+    glDrawArrays(GL_TRIANGLES, 0, ground.brick_points.size()); // Starting from vertex 0; 3 vertices total -> 1 triangle
     // glDrawArrays( GL_POINTS, 0, NumPoints );    // draw the points
     glFlush();
 }
