@@ -5,3 +5,7 @@
 2. use different shader:
     dark color for grids
     differeny color for different bricks
+
+3. add shape:
+    difficulties 1: compute collision of a whole shape
+    difficulties 2: rotation of shape
