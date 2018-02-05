@@ -10,14 +10,6 @@ using namespace std;
 
 Ground ground;
 
-
-
-
-
-
-
-
-
 void myInit(void) {
 
     // Create a vertex array object
