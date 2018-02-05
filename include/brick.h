@@ -7,6 +7,7 @@
 
 class Brick {
 
+    // TODO: need to change position from vec2 to vec3 (inorder to fit the transform matrix & coordinates in opengl ) ??
     vec2 position;
     vec3 color;
 
