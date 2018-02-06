@@ -1,8 +1,9 @@
 #ifndef _BRICK_H_
 #define _BRICK_H_
 
-#include "vec.h"
-#include "mat.h"
+#include "Angel.h"
+// #include "vec.h"
+// #include "mat.h"
 #include "config.h"
 
 class Brick {
@@ -27,11 +28,16 @@ public:
 
     Brick(vec2 position, vec3 color): position(position), color(color) {}
 
-    vec2 getPosition(vec2 new_position) {
+    vec2 getPosition() {
         return position;
     }
+
     void setPosition(vec2 new_position) {
         position = new_position;
+    }
+
+    void move(vec2 transform_vec) {
+        position += transform_vec;
     }
 
     void move(char direction) {
