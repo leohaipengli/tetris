@@ -19,25 +19,65 @@ public:
     Shape() {}
     Shape(vec3 color): color(color) {}
 
-    // TODO: how to deal with the strange floating number when the result is 0?
-    void rotate() {
-        // not use rotation matrix to rotate.
-        // since only rotate 90 degree, write the code directly
+    bool hasBrick(vec2 position) {
+        for(auto& brick: bricks) {
+            if(brick.getPosition() == position){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void setAllBricks(vector<vec2> new_positions) {
+        // assume the size of two vectors are the same
+        for(int i = 0; i < bricks.size(); i++) {
+            bricks[i].setPosition(new_positions[i]);
+        }
+    }
+
+    vector<vec2> getBrickPositions() {
+        vector<vec2> positions;
+        for(auto& brick: bricks) {
+            positions.push_back(brick.getPosition());
+        }
+        return positions;
+    }
+
+    void setColor(vec3 new_color) {
+        color = new_color;
+    }
+
+    vec3 getColor() {
+        return color;
+    }
+
+    vector<vec2> getNewPositionsRotation() {
+        // show the new occupied positions 
+        vector<vec2> new_positions;
         vec2 pivot_position = pivot->getPosition();
         vec2 brick_position;
         for(auto& brick: bricks) {
             brick_position = brick.getPosition();
             // apply rotatation formula
-            brick.setPosition(
-                vec2(
+            vec2 new_position = vec2(
                     pivot_position[0] + pivot_position[1] - brick_position[1],
                     -pivot_position[0] + pivot_position[1] + brick_position[0]
-                )
-            );
+                );
+            new_positions.push_back(new_position);
         }
+        return new_positions;
     }
 
-    void move(char direction) {
+    // TODO: how to deal with the strange floating number when the result is 0?
+    void rotate() {
+        // not use rotation matrix to rotate.
+        // since only rotate 90 degree, write the code directly
+        vector<vec2> new_positions = getNewPositionsRotation();
+        setAllBricks(new_positions);
+    }
+
+    vector<vec2> getNewPositionsMove(char direction) {
+        vector<vec2> new_positions;
         vec2 translation_vec;
         switch(direction) {
             case 'u':
@@ -53,18 +93,17 @@ public:
                 translation_vec = vec2(1, 0);
                 break;
         }
-
         for(auto& brick: bricks) {
-            brick.move(translation_vec);
+            vec2 new_position = vec2(brick.getPosition()+translation_vec);
+            // add to new positions list
+            new_positions.push_back(new_position);
         }
+        return new_positions;
     }
 
-    vector<Brick> getBricks() {
-        return bricks;
-    }
-
-    void setColor(vec3 new_color) {
-        color = new_color;
+    void move(char direction) {
+        vector<vec2> new_positions = this->getNewPositionsMove(direction);
+        setAllBricks(new_positions);
     }
 
     void print() {
@@ -161,8 +200,7 @@ CreateFn createArray[] = {
 };
 
 const size_t fncount = sizeof(createArray)/sizeof(*createArray);
-Shape *Create(vec2 pivot_position, vec3 color)
-{
+Shape *Create(vec2 pivot_position, vec3 color) {
    return createArray[rand() % fncount](pivot_position, color); //forward the call
 }
 

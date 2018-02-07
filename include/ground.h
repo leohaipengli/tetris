@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "shape.h"
 #include "vec.h"
 #include "mat.h"
 #include "config.h"
@@ -11,85 +12,121 @@
 using namespace std;
 
 class Ground {
+private:
+    Shape *currentShape;
+    // size: col*row
+    vector<vec3*> brick_colors;
 public:
-    vector<vec3> grid_points;
-    vector<vec3> brick_points;
-    vector<vec3> brick_colors;
+
     Ground() {
-        srand(time(NULL));
-        this->generateBrick();
-        this->generateColor();
+        initBrickColors();
     }
-
-
-    void generateColor() {
-        // num of points: 6 (for each brick) * NUM_ROWS * NUM_COLS
-        this->brick_colors.resize(6 * NUM_COLS * NUM_ROWS);
-        for(int i = 0; i < 6 * NUM_ROWS * NUM_COLS; i++) {
-            this->brick_colors[i] = vec3((float) rand() / (RAND_MAX), (float) rand() / (RAND_MAX), (float) rand() / (RAND_MAX)) / 5; 
+    ~Ground() {
+        for(auto& color: brick_colors) {
+            delete color;
         }
     }
-
-    void generateBrick() {
-        // num of points: 6 (for each brick) * NUM_ROWS * NUM_COLS
-        this->brick_points.resize(6 * NUM_COLS * NUM_ROWS);
-        int rem = 0, quo = 0;
-        for(int i = 0; i < NUM_ROWS * NUM_COLS; i++) {
-            rem = i % NUM_COLS;
-            quo = i / NUM_COLS;
-            this->brick_points[6*i] = vec3(toGLCoordinate((float)rem/NUM_COLS), toGLCoordinate((float)quo/NUM_ROWS), 0);
-            this->brick_points[6*i+1] = vec3(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
-            this->brick_points[6*i+2] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS), 0);
-            this->brick_points[6*i+3] = vec3(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
-            this->brick_points[6*i+4] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS), 0);
-            this->brick_points[6*i+5] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
+    // TODO: more game logic: eliminate a row 
+    bool isAvailable(vec2 position) {
+        // return false if
+        //   1. position out of range
+        //   2. position has brick
+        int intPosition = vec2ToInt(position);
+        if(intPosition < 0 || intPosition >= NUM_COLS * NUM_ROWS) {
+            return false;
         }
+        return brick_colors[vec2ToInt(position)] != NULL;
     }
 
-    vec3 getBrickColor(vec2 position) {
-        // assume the position is valid
-        // return the color (vec3) of one brick
-        int i = 6 * vec2ToInt(position);
-        // assume the 6 points of a brick has only one color
-        // return the color of the first 
-        return this->brick_colors[i];
-    }
-
-    void setBrickColor(vec2 position, vec3 color_vector) {
-        int i = 6 * vec2ToInt(position);
-        if(i < NUM_COLS * NUM_ROWS && i >= 0) {
-            for(int j = 0; j < 6; j++) {
-                brick_colors[i+j] = color_vector;
+    void deleteBricks(vector<vec2> positions) {
+        // delete color from multiple positions (delete bricks)
+        for(auto& position: positions) {
+            if(!isAvailable(position)) {
+                cout << "warning: try to delete brick in position " << position << " , which is out of the border of the ground" << endl;
+            } else {
+                brick_colors[vec2ToInt(position)] = NULL;
             }
-
-        } else {
-            cout << "setBrickColor(): ignore invalid position\n";
         }
     }
 
-    void moveBrickColor(vec2 position, char direction) {
-        // assume the position is always valid
-        // the position checking is done by other functions
-        vec3 color = getBrickColor(position);
-        vec2 new_position;
-        switch(direction) {
-            case 'u':
-                new_position = vec2(position[0] + 1, position[1]);
-                break;
-            case 'd':
-                new_position = vec2(position[0] - 1, position[1]);
-                break;
-            case 'l':
-                new_position = vec2(position[0], position[1] - 1);
-                break;
-            case 'r':
-                new_position = vec2(position[0], position[1] + 1);
-                break;
+    void setBricks(vector<vec2> positions, vec3 color) {
+        // set color to multiple positions 
+        for(auto& position: positions) {
+            int intPosition = vec2ToInt(position);
+            if(intPosition < 0 || intPosition >= NUM_COLS * NUM_ROWS) {
+                // tentative solution for out of range: show warning, not draw
+                cout << "warning: position " << position << " out of the border of the ground" << endl;
+            } else {
+                brick_colors[vec2ToInt(position)] = new vec3(color);
+            }
         }
-        // cout << "old position: " << position << endl;
-        // cout << "new position: " << new_position << endl;
-        setBrickColor(position, background_color);
-        setBrickColor(new_position, color);
+    }
+    // TODO: when the position is out of ground, don't show in the ground , but keep in the shape
+    bool moveShape(char direction) {
+        // return success
+        // move currentShape
+        vector<vec2> new_positions = currentShape->getNewPositionsMove(direction);
+        for(auto& new_position: new_positions) {
+            if(!currentShape->hasBrick(new_position) && this->isAvailable(new_position)) {
+                // fail to move
+                return false;
+            }
+        }
+        deleteBricks(currentShape->getBrickPositions());
+        // allow to move
+        currentShape->setAllBricks(new_positions);
+        setBricks(new_positions, currentShape->getColor());
+        return true;
+    }
+    
+    bool rotateShape() {
+        vector<vec2> new_positions = currentShape->getNewPositionsRotation();
+        for(auto& new_position: new_positions) {
+            if(!currentShape->hasBrick(new_position) && this->isAvailable(new_position)) {
+                // fail to rotate
+                return false;
+            }
+        }
+        // TODO: consider combine the two duplacated code pieces into one?
+        deleteBricks(currentShape->getBrickPositions());
+        // allow to move
+        currentShape->setAllBricks(new_positions);
+        setBricks(new_positions, currentShape->getColor());
+        return true;
+    }
+
+    void initBrickColors() {
+        // init brick_colors with all NULL (no brick exists)
+        brick_colors.resize(NUM_ROWS * NUM_COLS, NULL);
+    }
+
+    bool newShape(vec2 pivot_position, vec3 color) {
+        // return true if new shape can be generated
+        // else GAME OVER
+        currentShape = Create(pivot_position, color);
+        auto positions = currentShape->getBrickPositions();
+        for(auto& position: positions) {
+            if(isAvailable(position)) {
+                // return false if not (game over)
+                delShape();
+                return false;
+            }
+        }
+        // valid creatation: setBricks in ground
+        setBricks(positions, currentShape->getColor());
+        return true;
+    }
+
+    void delShape() {
+        // delete the shape but keep its bricks record in ground
+        if(currentShape != NULL) {
+            delete currentShape;
+            currentShape = NULL;
+        }
+    }
+
+    vector<vec3*> getColors() {
+        return brick_colors;
     }
 
 };
