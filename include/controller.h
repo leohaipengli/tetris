@@ -20,7 +20,7 @@ public:
         initBricks();
         initColors();
         // create the first shape
-        ground.onShapeFinish();
+        onShapeFinish();
     }
 
     void initGrids() {
@@ -143,8 +143,7 @@ public:
 
     void updateColors() {
         // update all colors
-        int i = 0;
-        for(int i = 0; i < NUM_COLS * NUM_ROWS) {
+        for(int i = 0; i < NUM_COLS * NUM_ROWS; i++) {
             setBrickColor(intToVec2(i), *(ground.getColors()[i]));
         }
     }

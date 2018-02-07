@@ -102,7 +102,9 @@ tetris.o: tetris.cpp /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/sys/sysmacros.h /usr/include/alloca.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
  /usr/include/GL/freeglut_ext.h /usr/include/GL/freeglut_ext.h \
- include/vec.h include/Angel.h include/mat.h include/CheckError.h
+ include/vec.h include/Angel.h include/mat.h include/CheckError.h \
+ include/config.h include/controller.h include/ground.h include/shape.h \
+ include/brick.h include/config.h include/utils.h
 InitShader.o: include/InitShader.cpp /usr/include/stdc-predef.h \
  include/Angel.h /usr/include/c++/5/cmath \
  /usr/include/x86_64-linux-gnu/c++/5/bits/c++config.h \

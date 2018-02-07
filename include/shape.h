@@ -30,7 +30,7 @@ public:
 
     void setAllBricks(vector<vec2> new_positions) {
         // assume the size of two vectors are the same
-        for(int i = 0; i < bricks.size(); i++) {
+        for(unsigned i = 0; i < bricks.size(); i++) {
             bricks[i].setPosition(new_positions[i]);
         }
     }
