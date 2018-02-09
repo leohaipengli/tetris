@@ -79,6 +79,9 @@ struct vec2 {
     //
     //  --- (modifying) Arithematic Operators ---
     //
+    bool operator == (const vec2& v) {
+        return abs(x-v.x) < 1e-7 && abs(y-v.y)<1e-7;
+    }
 
     vec2& operator += ( const vec2& v )
 	{ x += v.x;  y += v.y;   return *this; }
@@ -220,6 +223,9 @@ struct vec3 {
     //  --- (modifying) Arithematic Operators ---
     //
 
+    bool operator == (const vec3& v) {
+        return abs(x - v.x) < 1e-7 && abs(y - v.y) < 1e-7 && abs(z - v.z) < 1e-7;
+    }
     vec3& operator += ( const vec3& v )
 	{ x += v.x;  y += v.y;  z += v.z;  return *this; }
 
@@ -373,6 +379,10 @@ struct vec4 {
     //
     //  --- (modifying) Arithematic Operators ---
     //
+
+    bool operator == (const vec4& v) {
+        return abs(x - v.x) < 1e-7 && abs(y - v.y) < 1e-7 && abs(z - v.z) < 1e-7 && abs(w - v.w) < 1e-7;
+    }
 
     vec4& operator += ( const vec4& v )
 	{ x += v.x;  y += v.y;  z += v.z;  w += v.w;  return *this; }
