@@ -1,8 +1,10 @@
-#include "include/Angel.h"
-#include "include/config.h"
-#include "include/ground.h"
 #include "controller.h"
 
+Ground ground;
+
+vector<vec3> gl_grid_points;
+vector<vec3> gl_brick_points;
+vector<vec3> gl_brick_colors;
 
 void initGrids() {
     // insert vertical grid points

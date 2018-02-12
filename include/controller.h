@@ -5,14 +5,15 @@
 #include <iostream>
 #include <vector>
 
+extern Ground ground;
+
+extern vector<vec3> gl_grid_points;
+extern vector<vec3> gl_brick_points;
+extern vector<vec3> gl_brick_colors;
+
+
 // connect the game logic and the graphic logic
 // give command to the ground, and convert the ground to color data where can be directly sent to vbos
-
-Ground ground;
-
-vector<vec3> gl_grid_points;
-vector<vec3> gl_brick_points;
-vector<vec3> gl_brick_colors;
 
 void initGrids();
 void initColors();

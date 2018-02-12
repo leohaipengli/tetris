@@ -1,7 +1,6 @@
 #include<iostream>
 #include<vector>
-#include "include/Angel.h"
-#include "include/config.h"
+
 #include "include/controller.h"
 
 #define DEBUG

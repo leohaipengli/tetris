@@ -17,7 +17,7 @@ INCLUDEDIR=/usr/include/
 LIBDIR=/usr/lib
 
 # If you have more source files add them here 
-SOURCE= tetris.cpp include/InitShader.cpp
+SOURCE= tetris.cpp include/InitShader.cpp include/controller.cpp
 
 # The compiler we are using 
 CC= g++
