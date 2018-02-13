@@ -3,19 +3,24 @@
 Ground ground;
 
 vector<vec3> gl_grid_points;
+vector<vec3> gl_grid_colors;
 vector<vec3> gl_brick_points;
 vector<vec3> gl_brick_colors;
 
 void initGrids() {
     // insert vertical grid points
     for(int i = 1; i < NUM_COLS; i++) {
-        gl_grid_points.push_back(vec3(toGLCoordinate((float)i/NUM_COLS), -1.0, 0));
-        gl_grid_points.push_back(vec3(toGLCoordinate((float)i/NUM_COLS), 1.0, 0));
+        gl_grid_points.emplace_back(vec3(toGLCoordinate((float)i/NUM_COLS), -1.0, 0));
+        gl_grid_points.emplace_back(vec3(toGLCoordinate((float)i/NUM_COLS), 1.0, 0));
     }
     // insert horizontal grid points
     for(int i = 1; i < NUM_ROWS; i++) {
-        gl_grid_points.push_back(vec3(-1.0, toGLCoordinate((float)i/NUM_ROWS), 0));
-        gl_grid_points.push_back(vec3(1.0, toGLCoordinate((float)i/NUM_ROWS), 0));
+        gl_grid_points.emplace_back(vec3(-1.0, toGLCoordinate((float)i/NUM_ROWS), 0));
+        gl_grid_points.emplace_back(vec3(1.0, toGLCoordinate((float)i/NUM_ROWS), 0));
+    }
+    // assign grid color
+    for(int i = 0; i < 2 * (NUM_ROWS - 1) + (NUM_COLS - 1); i++) {
+        gl_grid_colors.emplace_back(vec3(grid_color));
     }
 
 }

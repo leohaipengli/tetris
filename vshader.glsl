@@ -1,14 +1,10 @@
-#version 330 
+#version 150
 
-in vec4 vPosition;
-in vec4 vColor;
-out vec4 fColor;
-
+in  vec4 vPosition;
+in  vec3 vColor;
+out vec4 color;
 
 void main() {
     gl_Position = vPosition;
-
-    // The color of each vertex will be interpolated
-    // to produce the color of each fragment
-    fColor = vColor;
+    color = vec4( vColor, 1.0 );
 }

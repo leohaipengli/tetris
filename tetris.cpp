@@ -8,7 +8,9 @@
 using namespace std;
 
 // VAO
-GLuint vao;
+GLuint vao_bricks, vao_grids;
+
+
 
 void myInit(void) {
     srand(time(NULL));
@@ -18,6 +20,36 @@ void myInit(void) {
     // create the first shape
     onShapeFinish();
     updateColors();
+    glGenVertexArrays( 1, &vao_grids );
+    glBindVertexArray( vao_grids );
+
+
+    // draw the grid lines
+    // Create and initialize a buffer object
+    GLuint buffer1;
+    glGenBuffers( 1, &buffer1 );
+    glBindBuffer( GL_ARRAY_BUFFER, buffer1 );
+    
+    //glBufferData( GL_ARRAY_BUFFER, sizeof(points1), points1, GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * (gl_grid_colors.size() + gl_grid_points.size()), &gl_grid_points.front(), GL_STATIC_DRAW );
+
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec3) * gl_grid_points.size(), &gl_grid_points.front());
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec3) * gl_grid_points.size(), sizeof(vec3) * gl_grid_colors.size(), &gl_grid_colors.front());
+
+    // Load shaders and use the resulting shader program
+    GLuint program1 = InitShader( "vshader.glsl", "fshader.glsl" );
+    glUseProgram( program1 );
+
+    // Initialize the vertex position attribute from the vertex shader
+    GLuint loc1 = glGetAttribLocation( program1, "vPosition" );
+    glEnableVertexAttribArray( loc1 );
+    glVertexAttribPointer( loc1, 2, GL_FLOAT, GL_FALSE, 0,
+                           BUFFER_OFFSET(0) );
+
+    GLuint vColor1 = glGetAttribLocation( program1, "vColor" );
+    glEnableVertexAttribArray( vColor1 );
+    glVertexAttribPointer( vColor1, 3, GL_FLOAT, GL_FALSE, 0,
+                           BUFFER_OFFSET(sizeof(vec3) * gl_grid_points.size()));
 
     glClearColor(background_color[0], background_color[1], background_color[2], 1.0); // background
 
@@ -26,54 +58,64 @@ void myInit(void) {
 //----------------------------------------------------------------------------
 
 void display(void) {
-    // Create a vertex array object
-    glGenVertexArrays( 1, &vao );
-    glBindVertexArray( vao );
-    // This will identify our grid buffer
-    GLuint grid_buffer;
-    // Generate 1 buffer, put the resulting identifier in grid_buffer
-    glGenBuffers(1, &grid_buffer);
-    // make the buffer 'active' by binding
-    glBindBuffer(GL_ARRAY_BUFFER, grid_buffer);
-    // send active buffer data
-    glBufferData(GL_ARRAY_BUFFER, gl_brick_points.size() * sizeof(vec3), &gl_brick_points.front(), GL_STATIC_DRAW);
+    // Create and bind a vertex array object
+    glGenVertexArrays( 1, &vao_bricks );
+    glBindVertexArray( vao_bricks );
+
+    // Create and bind a buffer object
+    GLuint buffer;
+    glGenBuffers( 1, &buffer );
+    glBindBuffer( GL_ARRAY_BUFFER, buffer );
+    
+
+    glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * (gl_brick_colors.size() + gl_brick_points.size()), &gl_brick_points.front(), GL_STATIC_DRAW );
+
+    // Next, we load the real data in parts.  We need to specify the
+    //   correct byte offset for placing the color data after the point
+    //   data in the buffer.  Conveniently, the byte offset we need is
+    //   the same as the size (in bytes) of the points array, which is
+    //   returned from "sizeof(points)".
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec3) * gl_brick_points.size(), &gl_brick_points.front());
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec3) * gl_brick_points.size(), sizeof(vec3) * gl_brick_colors.size(), &gl_brick_colors.front());
 
     // Load shaders and use the resulting shader program
     GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
     glUseProgram( program );
 
     // Initialize the vertex position attribute from the vertex shader
+    // Keep in mind that the second parameter is associated with the length of the array sent to opengl (1D,2D,3D or 4D).
+    // The last parameter is the offset where the data is stored on the buffer.
     GLuint loc = glGetAttribLocation( program, "vPosition" );
-    // glEnableVertexAttribArray( loc );
-    // glVertexAttribPointer( loc, 2, GL_FLOAT, GL_FALSE, 0,
-    //                        BUFFER_OFFSET(0) );
-
-    glEnableVertexAttribArray( 0 );
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0,
+    glEnableVertexAttribArray( loc );
+    glVertexAttribPointer( loc, 2, GL_FLOAT, GL_FALSE, 0,
                            BUFFER_OFFSET(0) );
-    // color buffer data
-    GLuint colorbuffer;
-    glGenBuffers(1, &colorbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glBufferData(GL_ARRAY_BUFFER, gl_brick_colors.size() * sizeof(vec3), &gl_brick_colors.front(), GL_STATIC_DRAW);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
+
+
+    // Likewise, initialize the vertex color attribute.  Once again, we
+    //    need to specify the starting offset (in bytes) for the color
+    //    data.  Just like loading the array, we use "sizeof(points)"
+    //    to determine the correct value.
+    GLuint vColor = glGetAttribLocation( program, "vColor" );
+    glEnableVertexAttribArray( vColor );
+    glVertexAttribPointer( vColor, 3, GL_FLOAT, GL_FALSE, 0,
+                           BUFFER_OFFSET(sizeof(vec3) * gl_brick_points.size()));
+
 
     glClear( GL_COLOR_BUFFER_BIT );     // clear the window
+    
 
-    // 2nd attribute buffer : colors
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glVertexAttribPointer(
-        1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-        3,                                // size
-        GL_FLOAT,                         // type
-        GL_FALSE,                         // normalized?
-        0,                                // stride
-        (void*)0                          // array buffer offset
-    );
+    //Draw triangles
+    //Here we are binding back the first vertex array object. Now we can acess all the buffers associated to it and render accordingly
+    glBindVertexArray( vao_bricks );
+    glDrawArrays( GL_TRIANGLES, 0, gl_brick_points.size());
 
-    glDrawArrays(GL_TRIANGLES, 0, gl_brick_points.size()); // Starting from vertex 0; 3 vertices total -> 1 triangle
-    // glDrawArrays( GL_POINTS, 0, NumPoints );    // draw the points
+    //Draw lines using the second vertex array object. On your tetris code, you probabily want to draw the lines first, then the triangles.
+    //If you want to change the thickness of the lines, this is how:  glLineWidth(5.0);    
+    // FIXME:
+    // glBindVertexArray( vao_grids );
+    // glDrawArrays( GL_LINES, 0, gl_grid_points.size());
+
+    //Causes all issued commands to be executed as quickly as they are accepted by the actual rendering engine
     glFlush();
 }
 
