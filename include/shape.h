@@ -7,6 +7,8 @@
 
 using namespace std;
 
+// TODO: override default rotate funciton for special shape
+
 class Shape {
     // don't consider collision
     // detect collision in ground

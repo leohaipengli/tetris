@@ -69,16 +69,30 @@ void setBrickColor(vec2 position, vec3 color_vector) {
     }
 }
 
+// FIXME: debug: print 1 if not background color
+void printColors() {
+    for(int j = NUM_ROWS - 1; j >= 0; j--) {
+        for(int i = 0; i < NUM_COLS; i++) {
+            int index = 6 * vec2ToInt(vec2(i, j));
+            cout << (gl_brick_colors[index] == background_color ? 0 : 1);
+        }
+        cout << endl;
+    }
+    cout << "/////////////////////////////////////\n";
+}
+
 // update all colors
 void updateColors() {
-    for(int i = 0; i < NUM_COLS * NUM_ROWS; i++) {
-        vec2 position = intToVec2(i);
-        vec3 color = ground.getColors()[i] != NULL ? *(ground.getColors()[i]): background_color;
+    for(int i = 0; i < NUM_COLS; i++) {
+        for(int j = 0; j < NUM_ROWS; j++) {
+            vec2 position = vec2(i, j);
+            vec3 color = ground.getColor(i, j) != NULL ? *(ground.getColor(i, j)): background_color;
         // FIXME: delete debugging info
-        if(color[0] != background_color[0]) {
-            cout << "set " << position << " color: " << color << endl;
+            if(color[0] != background_color[0]) {
+                cout << "set " << position << " color: " << color << endl;
+            }
+            setBrickColor(position, color);
         }
-        setBrickColor(position, color);
     }
 }
 
@@ -124,5 +138,6 @@ void onKeyPressed(unsigned char key, int x, int y) {
 
     if(success){ 
         updateColors();
+        printColors();
     }
 }

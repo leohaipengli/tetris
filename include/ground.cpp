@@ -1,16 +1,15 @@
 #include "ground.h"
+
 bool Ground::isOutOfGround(vec2 position) {
-    // FIXME: bug
-    int intPosition = vec2ToInt(position);
-    if(intPosition < 0 || intPosition >= NUM_COLS * NUM_ROWS) {
-        return true;
-    } else {
-        return false;
-    }
+    if(position[0] < 0 || position[0] >= NUM_COLS) return true;
+    if(position[1] < 0 || position[1] >= NUM_ROWS) return true;
+    return false;
 }
+
 bool Ground::hasBrick(vec2 position) {
-    return brick_colors[vec2ToInt(position)] != NULL;
+    return brick_colors[position[0]][position[1]] != NULL;
 }
+
 bool Ground::isAvailable(vec2 position) {
     // return false if
     //   1. position out of range
@@ -24,7 +23,7 @@ void Ground::deleteBricks(vector<vec2> positions) {
         if(isOutOfGround(position)) {
             cout << "warning: try to delete brick in position " << position << " , which is out of the border of the ground" << endl;
         } else {
-            brick_colors[vec2ToInt(position)] = NULL;
+            brick_colors[position[0]][position[1]] = NULL;
         }
     }
 }
@@ -36,7 +35,7 @@ void Ground::setBricks(vector<vec2> positions, vec3 color) {
             // tentative solution for out of range: show warning, not draw
             cout << "warning: position " << position << " out of the border of the ground" << endl;
         } else {
-            brick_colors[vec2ToInt(position)] = new vec3(color);
+            brick_colors[position[0]][position[1]] = new vec3(color);
         }
     }
 }
@@ -76,7 +75,10 @@ bool Ground::rotateShape() {
 
 void Ground::initBrickColors() {
     // init brick_colors with all NULL (no brick exists)
-    brick_colors.resize(NUM_ROWS * NUM_COLS, NULL);
+    brick_colors.resize(NUM_COLS);
+    for(auto& col: brick_colors) {
+        col.resize(NUM_ROWS, NULL);
+    }
 }
 
 bool Ground::newShape(vec2 pivot_position, vec3 color) {
@@ -104,6 +106,6 @@ void Ground::delShape() {
     }
 }
 
-vector<vec3*> Ground::getColors() {
-    return brick_colors;
+vec3* Ground::getColor(int x, int y) {
+    return brick_colors[x][y];
 }

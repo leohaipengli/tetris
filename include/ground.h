@@ -14,15 +14,18 @@ private:
     Shape *currentShape;
     // size: col*row
     // TODO: convert 1D to 2D in order to recognize border correctly
-    vector<vec3*> brick_colors;
+    vector<vector<vec3*>> brick_colors;
 public:
 
     Ground() {
         initBrickColors();
     }
     ~Ground() {
-        for(auto& color: brick_colors) {
-            delete color;
+        delete currentShape;
+        for(auto& col: brick_colors) {
+            for(auto& color: col){
+                delete color;
+            }
         }
     }
     // TODO: more game logic: eliminate a row 
@@ -36,7 +39,7 @@ public:
     void initBrickColors();
     bool newShape(vec2 pivot_position, vec3 color);
     void delShape();
-    vector<vec3*> getColors();
+    vec3* getColor(int x, int y);
 };
 
 #endif
