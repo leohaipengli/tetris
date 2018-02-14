@@ -31,10 +31,10 @@ void myInit(void) {
     glBindBuffer( GL_ARRAY_BUFFER, buffer1 );
     
     //glBufferData( GL_ARRAY_BUFFER, sizeof(points1), points1, GL_STATIC_DRAW );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * (gl_grid_colors.size() + gl_grid_points.size()), &gl_grid_points.front(), GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * gl_grid_colors.size() + gl_grid_points.size() * sizeof(vec2), &gl_grid_points.front(), GL_STATIC_DRAW );
 
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec3) * gl_grid_points.size(), &gl_grid_points.front());
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec3) * gl_grid_points.size(), sizeof(vec3) * gl_grid_colors.size(), &gl_grid_colors.front());
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec2) * gl_grid_points.size(), &gl_grid_points.front());
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec2) * gl_grid_points.size(), sizeof(vec3) * gl_grid_colors.size(), &gl_grid_colors.front());
 
     // Load shaders and use the resulting shader program
     GLuint program1 = InitShader( "vshader.glsl", "fshader.glsl" );
@@ -49,7 +49,7 @@ void myInit(void) {
     GLuint vColor1 = glGetAttribLocation( program1, "vColor" );
     glEnableVertexAttribArray( vColor1 );
     glVertexAttribPointer( vColor1, 3, GL_FLOAT, GL_FALSE, 0,
-                           BUFFER_OFFSET(sizeof(vec3) * gl_grid_points.size()));
+                           BUFFER_OFFSET(sizeof(vec2) * gl_grid_points.size()));
 
     glClearColor(background_color[0], background_color[1], background_color[2], 1.0); // background
 
@@ -57,7 +57,7 @@ void myInit(void) {
 
 //----------------------------------------------------------------------------
 
-void display(void) {
+void updateBricks() {
     // Create and bind a vertex array object
     glGenVertexArrays( 1, &vao_bricks );
     glBindVertexArray( vao_bricks );
@@ -100,6 +100,11 @@ void display(void) {
     glVertexAttribPointer( vColor, 3, GL_FLOAT, GL_FALSE, 0,
                            BUFFER_OFFSET(sizeof(vec3) * gl_brick_points.size()));
 
+}
+void display(void) {
+    cout << "display() is called" << endl;
+
+    updateBricks();
 
     glClear( GL_COLOR_BUFFER_BIT );     // clear the window
     
@@ -112,8 +117,8 @@ void display(void) {
     //Draw lines using the second vertex array object. On your tetris code, you probabily want to draw the lines first, then the triangles.
     //If you want to change the thickness of the lines, this is how:  glLineWidth(5.0);    
     // FIXME:
-    // glBindVertexArray( vao_grids );
-    // glDrawArrays( GL_LINES, 0, gl_grid_points.size());
+    glBindVertexArray( vao_grids );
+    glDrawArrays( GL_LINES, 0, gl_grid_points.size());
 
     //Causes all issued commands to be executed as quickly as they are accepted by the actual rendering engine
     glFlush();

@@ -2,24 +2,24 @@
 
 Ground ground;
 
-vector<vec3> gl_grid_points;
+vector<vec2> gl_grid_points;
 vector<vec3> gl_grid_colors;
-vector<vec3> gl_brick_points;
+vector<vec2> gl_brick_points;
 vector<vec3> gl_brick_colors;
 
 void initGrids() {
     // insert vertical grid points
     for(int i = 1; i < NUM_COLS; i++) {
-        gl_grid_points.emplace_back(vec3(toGLCoordinate((float)i/NUM_COLS), -1.0, 0));
-        gl_grid_points.emplace_back(vec3(toGLCoordinate((float)i/NUM_COLS), 1.0, 0));
+        gl_grid_points.emplace_back(vec2(toGLCoordinate((float)i/NUM_COLS), -1.0));
+        gl_grid_points.emplace_back(vec2(toGLCoordinate((float)i/NUM_COLS), 1.0));
     }
     // insert horizontal grid points
     for(int i = 1; i < NUM_ROWS; i++) {
-        gl_grid_points.emplace_back(vec3(-1.0, toGLCoordinate((float)i/NUM_ROWS), 0));
-        gl_grid_points.emplace_back(vec3(1.0, toGLCoordinate((float)i/NUM_ROWS), 0));
+        gl_grid_points.emplace_back(vec2(-1.0, toGLCoordinate((float)i/NUM_ROWS)));
+        gl_grid_points.emplace_back(vec2(1.0, toGLCoordinate((float)i/NUM_ROWS)));
     }
     // assign grid color
-    for(int i = 0; i < 2 * (NUM_ROWS - 1) + (NUM_COLS - 1); i++) {
+    for(int i = 0; i < 2 * (NUM_ROWS - 1) + 2 * (NUM_COLS - 1); i++) {
         gl_grid_colors.emplace_back(vec3(grid_color));
     }
 
@@ -40,12 +40,12 @@ void initBricks() {
     for(int i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         rem = i % NUM_COLS;
         quo = i / NUM_COLS;
-        gl_brick_points[6*i] = vec3(toGLCoordinate((float)rem/NUM_COLS), toGLCoordinate((float)quo/NUM_ROWS), 0);
-        gl_brick_points[6*i+1] = vec3(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
-        gl_brick_points[6*i+2] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS), 0);
-        gl_brick_points[6*i+3] = vec3(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
-        gl_brick_points[6*i+4] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS), 0);
-        gl_brick_points[6*i+5] = vec3(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS), 0);
+        gl_brick_points[6*i] = vec2(toGLCoordinate((float)rem/NUM_COLS), toGLCoordinate((float)quo/NUM_ROWS));
+        gl_brick_points[6*i+1] = vec2(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS));
+        gl_brick_points[6*i+2] = vec2(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS));
+        gl_brick_points[6*i+3] = vec2(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS));
+        gl_brick_points[6*i+4] = vec2(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS));
+        gl_brick_points[6*i+5] = vec2(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS));
     }
 }
 void onShapeFinish() {
@@ -93,9 +93,11 @@ void updateColors() {
             vec2 position = vec2(i, j);
             vec3 color = ground.getColor(i, j) != NULL ? *(ground.getColor(i, j)): background_color;
         // FIXME: delete debugging info
+#ifdef DEBUG
             if(color[0] != background_color[0]) {
                 cout << "set " << position << " color: " << color << endl;
             }
+#endif
             setBrickColor(position, color);
         }
     }
@@ -142,7 +144,12 @@ void onKeyPressed(unsigned char key, int x, int y) {
     }
 
     if(success){ 
+        // update controller
         updateColors();
+#ifdef DEBUG
         printColors();
+#endif 
+        // update gl window
+        glutPostRedisplay();
     }
 }

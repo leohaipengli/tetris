@@ -7,9 +7,9 @@
 
 extern Ground ground;
 
-extern vector<vec3> gl_grid_points;
+extern vector<vec2> gl_grid_points;
 extern vector<vec3> gl_grid_colors;
-extern vector<vec3> gl_brick_points;
+extern vector<vec2> gl_brick_points;
 extern vector<vec3> gl_brick_colors;
 
 
