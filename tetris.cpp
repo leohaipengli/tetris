@@ -11,6 +11,7 @@ using namespace std;
 GLuint vao_bricks, vao_grids;
 
 
+GLuint program;
 
 void myInit(void) {
     srand(time(NULL));
@@ -31,22 +32,22 @@ void myInit(void) {
     glBindBuffer( GL_ARRAY_BUFFER, buffer1 );
     
     //glBufferData( GL_ARRAY_BUFFER, sizeof(points1), points1, GL_STATIC_DRAW );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * gl_grid_colors.size() + gl_grid_points.size() * sizeof(vec2), &gl_grid_points.front(), GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * gl_grid_colors.size() + gl_grid_points.size() * sizeof(vec2), &gl_grid_points.front(), GL_STREAM_DRAW );
 
     glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec2) * gl_grid_points.size(), &gl_grid_points.front());
     glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec2) * gl_grid_points.size(), sizeof(vec3) * gl_grid_colors.size(), &gl_grid_colors.front());
 
     // Load shaders and use the resulting shader program
-    GLuint program1 = InitShader( "vshader.glsl", "fshader.glsl" );
-    glUseProgram( program1 );
+    program = InitShader( "vshader.glsl", "fshader.glsl" );
+    glUseProgram( program );
 
     // Initialize the vertex position attribute from the vertex shader
-    GLuint loc1 = glGetAttribLocation( program1, "vPosition" );
+    GLuint loc1 = glGetAttribLocation( program, "vPosition" );
     glEnableVertexAttribArray( loc1 );
     glVertexAttribPointer( loc1, 2, GL_FLOAT, GL_FALSE, 0,
                            BUFFER_OFFSET(0) );
 
-    GLuint vColor1 = glGetAttribLocation( program1, "vColor" );
+    GLuint vColor1 = glGetAttribLocation( program, "vColor" );
     glEnableVertexAttribArray( vColor1 );
     glVertexAttribPointer( vColor1, 3, GL_FLOAT, GL_FALSE, 0,
                            BUFFER_OFFSET(sizeof(vec2) * gl_grid_points.size()));
@@ -78,16 +79,16 @@ void updateBricks() {
     glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec3) * gl_brick_points.size(), &gl_brick_points.front());
     glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec3) * gl_brick_points.size(), sizeof(vec3) * gl_brick_colors.size(), &gl_brick_colors.front());
 
-    // Load shaders and use the resulting shader program
-    GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
-    glUseProgram( program );
+    // Load shaders and use the resulting shader program if we need new shaders
+    // program = InitShader( "vshader.glsl", "fshader.glsl" );
+    // glUseProgram( program );
 
     // Initialize the vertex position attribute from the vertex shader
     // Keep in mind that the second parameter is associated with the length of the array sent to opengl (1D,2D,3D or 4D).
     // The last parameter is the offset where the data is stored on the buffer.
-    GLuint loc = glGetAttribLocation( program, "vPosition" );
-    glEnableVertexAttribArray( loc );
-    glVertexAttribPointer( loc, 2, GL_FLOAT, GL_FALSE, 0,
+    GLuint vPosition = glGetAttribLocation( program, "vPosition" );
+    glEnableVertexAttribArray( vPosition );
+    glVertexAttribPointer( vPosition, 2, GL_FLOAT, GL_FALSE, 0,
                            BUFFER_OFFSET(0) );
 
 

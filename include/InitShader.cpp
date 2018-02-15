@@ -48,6 +48,7 @@ GLuint InitShader(const char* vShaderFile, const char* fShaderFile) {
 	glShaderSource( shader, 1, (const GLchar**) &s.source, NULL );
 	glCompileShader( shader );
 
+    // whether the shaders are compiled 
 	GLint  compiled;
 	glGetShaderiv( shader, GL_COMPILE_STATUS, &compiled );
 	if ( !compiled ) {
@@ -64,6 +65,7 @@ GLuint InitShader(const char* vShaderFile, const char* fShaderFile) {
 
 	delete [] s.source;
 
+	// Up until now the vertex and fragment shaders have been two separate objects. While they've been programmed to work together, they aren't actually connected yet. This connection is made by creating a program out of these two shaders.
 	glAttachShader( program, shader );
     }
 
