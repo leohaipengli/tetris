@@ -14,13 +14,7 @@ GLuint vao_bricks, vao_grids;
 GLuint program;
 
 void myInit(void) {
-    srand(time(NULL));
-    initGrids();
-    initBricks();
-    initColors();
-    // create the first shape
-    onShapeFinish();
-    updateColors();
+    startGame();
     glGenVertexArrays( 1, &vao_grids );
     glBindVertexArray( vao_grids );
 

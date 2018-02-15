@@ -28,6 +28,9 @@ void updateColors();
 void autoDropDown(int);
 void onKeyPressed(unsigned char key, int x, int y);
 void onSpecialKeyPressed(int key, int x, int y);
+void startGame();
+void stopGame();
+void restartGame();
 GLuint loadBMP_custom(const char *imagepath);
 
 

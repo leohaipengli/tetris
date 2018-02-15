@@ -1,6 +1,6 @@
 #include "controller.h"
 
-bool gameStatus = true;
+bool gameStatus = false;
 
 Ground ground;
 
@@ -151,6 +151,7 @@ void onShapeFinish() {
     } else {
         // TODO: if the game is over: 
         cout << "Game Over" << endl;
+        gameStatus = false;
     }
 }
 
@@ -196,6 +197,10 @@ void updateColors() {
 }
 
 void autoDropDown(int foo) {
+    glutTimerFunc(700.0, autoDropDown, 0);
+    if(!gameStatus) {
+        return;
+    }
     // should be triggered by timer
     if(ground.moveShape('d')) {
         // if not bottom
@@ -208,7 +213,6 @@ void autoDropDown(int foo) {
     glutPostRedisplay();
 
     //then we can set another identical event in 1000 miliseconds in the future, that is how we keep the triangle rotating
-    glutTimerFunc(700.0, autoDropDown, 0);
 }
 void onSpecialKeyPressed(int key, int x, int y) {
     if(!gameStatus) {
@@ -257,6 +261,9 @@ void onKeyPressed(unsigned char key, int x, int y) {
         // cout << "esc\n";
         exit( EXIT_SUCCESS );
         break;
+    case 'r':
+        restartGame();
+        break;
     }
 }
 
@@ -264,14 +271,26 @@ void startGame() {
     if(gameStatus) {
         return;
     }
+    gameStatus = true;
+    srand(time(NULL));
+    ground.clear();
+    initGrids();
+    initBricks();
+    initColors();
+    // create the first shape
+    onShapeFinish();
+    updateColors();
 
 }
 void stopGame() {
     if(!gameStatus) {
         return;
     }
-
+    gameStatus = false;
+    // clear all bricks
+    ground.clear();
 }
+
 void restartGame() {
     stopGame();
     startGame();
