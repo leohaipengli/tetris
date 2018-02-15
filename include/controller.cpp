@@ -151,7 +151,7 @@ void onShapeFinish() {
     } else {
         // TODO: if the game is over: 
         cout << "Game Over" << endl;
-        gameStatus = false;
+        stopGame();
     }
 }
 
@@ -288,7 +288,7 @@ void stopGame() {
     }
     gameStatus = false;
     // clear all bricks
-    ground.clear();
+    // ground.clear();
 }
 
 void restartGame() {
