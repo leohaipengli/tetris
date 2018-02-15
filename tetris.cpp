@@ -67,7 +67,6 @@ void updateBricks() {
     GLuint buffer;
     glGenBuffers( 1, &buffer );
     glBindBuffer( GL_ARRAY_BUFFER, buffer );
-    
 
     glBufferData( GL_ARRAY_BUFFER, sizeof(vec3) * (gl_brick_colors.size() + gl_brick_points.size()), &gl_brick_points.front(), GL_STATIC_DRAW );
 
@@ -79,6 +78,13 @@ void updateBricks() {
     glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(vec3) * gl_brick_points.size(), &gl_brick_points.front());
     glBufferSubData( GL_ARRAY_BUFFER, sizeof(vec3) * gl_brick_points.size(), sizeof(vec3) * gl_brick_colors.size(), &gl_brick_colors.front());
 
+
+    // Create element buffers
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLint) * gl_brick_elements.size(), &gl_brick_elements.front(), GL_STATIC_DRAW);
+    
     // Load shaders and use the resulting shader program if we need new shaders
     // program = InitShader( "vshader.glsl", "fshader.glsl" );
     // glUseProgram( program );
@@ -113,7 +119,8 @@ void display(void) {
     //Draw triangles
     //Here we are binding back the first vertex array object. Now we can acess all the buffers associated to it and render accordingly
     glBindVertexArray( vao_bricks );
-    glDrawArrays( GL_TRIANGLES, 0, gl_brick_points.size());
+    // glDrawArrays( GL_TRIANGLES, 0, gl_brick_points.size());
+    glDrawElements(GL_TRIANGLES, gl_brick_elements.size(), GL_UNSIGNED_INT, 0);
 
     //Draw lines using the second vertex array object. On your tetris code, you probabily want to draw the lines first, then the triangles.
     //If you want to change the thickness of the lines, this is how:  glLineWidth(5.0);    

@@ -1,2 +1,3 @@
+0. try to optimize the memory use of vertex by using drawElements
 1. game start/over/restart
 2. overrite rotate function for certain objects

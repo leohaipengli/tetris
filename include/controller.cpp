@@ -7,6 +7,7 @@ Ground ground;
 vector<vec2> gl_grid_points;
 vector<vec3> gl_grid_colors;
 vector<vec2> gl_brick_points;
+vector<GLint> gl_brick_elements;
 vector<vec3> gl_brick_colors;
 vector<vec2> gl_gameover_points;
 
@@ -28,10 +29,37 @@ void initGrids() {
 
 }
 
-void initColors() {
+void initBricks() {
     // num of points: 6 (for each brick) * NUM_ROWS * NUM_COLS
-    gl_brick_colors.resize(6 * NUM_COLS * NUM_ROWS);
-    for(int i = 0; i < 6 * NUM_ROWS * NUM_COLS; i++) {
+    gl_brick_points.resize(4 * NUM_COLS * NUM_ROWS);
+    gl_brick_elements.resize(6 * NUM_COLS * NUM_ROWS);
+    int rem = 0, quo = 0;
+    for(int i = 0; i < NUM_ROWS * NUM_COLS; i++) {
+        rem = i % NUM_COLS;
+        quo = i / NUM_COLS;
+        // (0, 0)
+        gl_brick_points[4*i] = vec2(toGLCoordinate((float)rem/NUM_COLS), toGLCoordinate((float)quo/NUM_ROWS));
+        // (0, 1)
+        gl_brick_points[4*i+1] = vec2(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS));
+        // (1, 0)
+        gl_brick_points[4*i+2] = vec2(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS));
+        // (1, 1)
+        gl_brick_points[4*i+3] = vec2(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS));
+
+        // specify the indices in gl_brick_points
+        gl_brick_elements[6 * i] = 4 * i;
+        gl_brick_elements[6 * i + 1] = 4 * i + 1;
+        gl_brick_elements[6 * i + 2] = 4 * i + 2;
+        gl_brick_elements[6 * i + 3] = 4 * i + 1;
+        gl_brick_elements[6 * i + 4] = 4 * i + 2;
+        gl_brick_elements[6 * i + 5] = 4 * i + 3;
+    }
+}
+
+void initColors() {
+    // num of points: 4(for each brick) * NUM_ROWS * NUM_COLS
+    gl_brick_colors.resize(4 * NUM_COLS * NUM_ROWS);
+    for(int i = 0; i < 4 * NUM_ROWS * NUM_COLS; i++) {
         gl_brick_colors[i] = vec3(background_color);
     }
 }
@@ -87,32 +115,15 @@ glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 void initGameover() {
     // points of the rectangle
-    gl_gameover_points.resize(6);
+    gl_gameover_points.resize(4);
     gl_gameover_points[0] = vec2(-0.5, -0.5);
     gl_gameover_points[1] = vec2(0.5, -0.5);
     gl_gameover_points[2] = vec2(-0.5, 0.5);
-    gl_gameover_points[3] = vec2(0.5, -0.5);
-    gl_gameover_points[4] = vec2(-0.5, 0.5);
-    gl_gameover_points[5] = vec2(0.5, 0.5);
+    gl_gameover_points[3] = vec2(0.5, 0.5);
     // gameover bmp file
     // GLuint loadBMP_custom("src/gameover.bmp");
 }
 
-void initBricks() {
-    // num of points: 6 (for each brick) * NUM_ROWS * NUM_COLS
-    gl_brick_points.resize(6 * NUM_COLS * NUM_ROWS);
-    int rem = 0, quo = 0;
-    for(int i = 0; i < NUM_ROWS * NUM_COLS; i++) {
-        rem = i % NUM_COLS;
-        quo = i / NUM_COLS;
-        gl_brick_points[6*i] = vec2(toGLCoordinate((float)rem/NUM_COLS), toGLCoordinate((float)quo/NUM_ROWS));
-        gl_brick_points[6*i+1] = vec2(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS));
-        gl_brick_points[6*i+2] = vec2(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS));
-        gl_brick_points[6*i+3] = vec2(toGLCoordinate((float)(rem)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS));
-        gl_brick_points[6*i+4] = vec2(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo)/NUM_ROWS));
-        gl_brick_points[6*i+5] = vec2(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS));
-    }
-}
 vec3 randomColor() {
     return vec3(
         ((double) rand() / 2 / (RAND_MAX)) + 0.5,
@@ -145,9 +156,9 @@ void onShapeFinish() {
 
 // FIXME: bugs here!
 void setBrickColor(vec2 position, vec3 color_vector) {
-    int i = 6 * vec2ToInt(position);
-    if(i < 6 * NUM_COLS * NUM_ROWS && i >= 0) {
-        for(int j = 0; j < 6; j++) {
+    int i = 4 * vec2ToInt(position);
+    if(i < 4 * NUM_COLS * NUM_ROWS && i >= 0) {
+        for(int j = 0; j < 4; j++) {
             gl_brick_colors[i+j] = color_vector;
         }
     } else {
@@ -159,7 +170,7 @@ void setBrickColor(vec2 position, vec3 color_vector) {
 void printColors() {
     for(int j = NUM_ROWS - 1; j >= 0; j--) {
         for(int i = 0; i < NUM_COLS; i++) {
-            int index = 6 * vec2ToInt(vec2(i, j));
+            int index = 4 * vec2ToInt(vec2(i, j));
             cout << (gl_brick_colors[index] == background_color ? 0 : 1);
         }
         cout << endl;
