@@ -1,11 +1,3 @@
-(not important now since we don't need grid lines now)1. use two buffers:
-    one for grid (static)
-    one for bricks (dynamic)
-
-2. use different shader:
-    dark color for grids
-    differeny color for different bricks
-
-3. add shape:
-    difficulties 1: compute collision of a whole shape
-    difficulties 2: rotation of shape
+0. row elimination
+1. Random color
+2. game start/over/restart
