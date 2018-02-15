@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+extern bool gameStatus;
+
 extern Ground ground;
 
 extern vector<vec2> gl_grid_points;
@@ -22,8 +24,9 @@ void initBricks();
 void onShapeFinish();
 void setBrickColor(vec2 position, vec3 color_vector);
 void updateColors();
-void autoDropDown();
+void autoDropDown(int);
 void onKeyPressed(unsigned char key, int x, int y);
+void onSpecialKeyPressed(int key, int x, int y);
 
 
 #endif

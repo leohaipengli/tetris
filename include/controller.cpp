@@ -1,5 +1,7 @@
 #include "controller.h"
 
+bool gameStatus = true;
+
 Ground ground;
 
 vector<vec2> gl_grid_points;
@@ -48,12 +50,28 @@ void initBricks() {
         gl_brick_points[6*i+5] = vec2(toGLCoordinate((float)(rem+1)/NUM_COLS), toGLCoordinate((float)(quo+1)/NUM_ROWS));
     }
 }
+vec3 randomColor() {
+    return vec3(
+        ((double) rand() / 2 / (RAND_MAX)) + 0.5,
+        ((double) rand() / 2 / (RAND_MAX)) + 0.5,
+        ((double) rand() / 2 / (RAND_MAX)) + 0.5
+    );
+}
 void onShapeFinish() {
     // do something when one shape is finished (touch the buttom of the ground)
     ground.delShape();
-    // if game is not over
+    // detect elimination
+    int bottomEliminatedRow = NUM_ROWS;
+    for(int j = NUM_ROWS - 1; j >= 0; j--) {
+        if(ground.isRowFull(j)){
+            ground.delRow(j);
+            bottomEliminatedRow = j;
+        }
+    }
+    ground.dropAllBricksAboveFromRow(bottomEliminatedRow);
+// if game is not over
     // FIXME: change the init position of shape & use random color
-    if(ground.newShape(vec2(NUM_COLS/2, NUM_ROWS-2), vec3(1, 0, 0))) {
+    if(ground.newShape(vec2(NUM_COLS/2, NUM_ROWS-2), randomColor())) {
         // TODO: if new shape can be generated
 
     } else {
@@ -103,7 +121,7 @@ void updateColors() {
     }
 }
 
-void autoDropDown() {
+void autoDropDown(int foo) {
     // should be triggered by timer
     if(ground.moveShape('d')) {
         // if not bottom
@@ -112,31 +130,36 @@ void autoDropDown() {
         onShapeFinish();
     }
     updateColors();
+        //Always remember to update your canvas
+    glutPostRedisplay();
+
+    //then we can set another identical event in 1000 miliseconds in the future, that is how we keep the triangle rotating
+    glutTimerFunc(700.0, autoDropDown, 0);
 }
-void onKeyPressed(unsigned char key, int x, int y) {
-    // if failed, just return and don't updateColors
+void onSpecialKeyPressed(int key, int x, int y) {
+    if(!gameStatus) {
+        return;
+    }
+
     bool success = true;
+
     switch ( key ) {
-    case 0x1b:
-        // cout << "esc\n";
-        exit( EXIT_SUCCESS );
-        break;
-    case 'w':
+    case GLUT_KEY_UP:
         success = ground.rotateShape();
         cout << "up\n";
         break;
-    case 's':
+    case GLUT_KEY_DOWN:
         //do something here
         while(ground.moveShape('d')) {}
         onShapeFinish();
         cout << "down\n";
         break;
-    case 'a':
+    case GLUT_KEY_LEFT:
         //do something here
         success = ground.moveShape('l');
         cout << "left\n";
         break;
-    case 'd':
+    case GLUT_KEY_RIGHT:
         //do something here
         success = ground.moveShape('r');
         cout << "right\n";
@@ -152,4 +175,30 @@ void onKeyPressed(unsigned char key, int x, int y) {
         // update gl window
         glutPostRedisplay();
     }
+}
+void onKeyPressed(unsigned char key, int x, int y) {
+    // if failed, just return and don't updateColors
+    switch ( key ) {
+    case 0x1b:
+        // cout << "esc\n";
+        exit( EXIT_SUCCESS );
+        break;
+    }
+}
+
+void startGame() {
+    if(gameStatus) {
+        return;
+    }
+
+}
+void stopGame() {
+    if(!gameStatus) {
+        return;
+    }
+
+}
+void restartGame() {
+    stopGame();
+    startGame();
 }

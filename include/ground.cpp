@@ -106,6 +106,45 @@ void Ground::delShape() {
     }
 }
 
+bool Ground::isRowFull(int row) {
+    for(int i = 0; i < NUM_COLS; i++) {
+        if(!brick_colors[i][row]){
+            return false;
+        }
+    }
+    return true;
+}
+
+void Ground::delRow(int row) {
+    for(int i = 0; i < NUM_COLS; i++) {
+        if(brick_colors[i][row]){
+            delete brick_colors[i][row];
+            brick_colors[i][row] = NULL;
+        }
+    }
+}
+
+void Ground::dropAllBricksAboveFromRow(int row) {
+    for(int j = row; j < NUM_ROWS; j++) {
+        // drop bottom up
+        for(int i = 0; i < NUM_COLS; i++) {
+            // if the brick below current one is available
+            int k = 1;
+            while(isAvailable(vec2(i, j-k))) {
+                // swap the two block
+                k++;
+            }
+            brick_colors[i][j-k+1] = brick_colors[i][j];
+            brick_colors[i][j] = NULL;
+        }
+    }
+}
+void Ground::clear() {
+    for(int j = 0; j < NUM_ROWS; j++) {
+        delRow(j);
+    }
+}
+
 vec3* Ground::getColor(int x, int y) {
     return brick_colors[x][y];
 }

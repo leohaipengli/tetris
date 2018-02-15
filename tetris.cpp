@@ -148,6 +148,9 @@ int main(int argc, char **argv) {
 
     glutDisplayFunc( display );
     glutKeyboardFunc( onKeyPressed );
+    glutSpecialFunc( onSpecialKeyPressed );
+
+    glutTimerFunc(700.0, autoDropDown, 0);
 
     glutMainLoop();
     return 0;

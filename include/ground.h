@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include  "shapefactory.h"
+#include "shapefactory.h"
 #include "config.h"
 #include "utils.h"
 
@@ -39,6 +39,11 @@ public:
     void initBrickColors();
     bool newShape(vec2 pivot_position, vec3 color);
     void delShape();
+    bool isRowFull(int row);
+    void delRow(int row);
+    // used when one row is eliminated;
+    void dropAllBricksAboveFromRow(int row);
+    void clear();
     vec3* getColor(int x, int y);
 };
 
