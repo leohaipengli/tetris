@@ -39,7 +39,6 @@ void Ground::setBricks(vector<vec2> positions, vec3 color) {
         }
     }
 }
-// TODO: when the position is out of ground, don't show in the ground , but keep in the shape
 bool Ground::moveShape(char direction) {
     // return success
     // move currentShape
@@ -65,7 +64,6 @@ bool Ground::rotateShape() {
             return false;
         }
     }
-    // TODO: consider combine the two duplacated code pieces into one?
     deleteBricks(currentShape->getBrickPositions());
     // allow to move
     currentShape->setAllBricks(new_positions);

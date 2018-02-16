@@ -13,7 +13,6 @@ class Ground {
 private:
     Shape *currentShape;
     // size: col*row
-    // TODO: convert 1D to 2D in order to recognize border correctly
     vector<vector<vec3*>> brick_colors;
 public:
 
@@ -28,7 +27,6 @@ public:
             }
         }
     }
-    // TODO: more game logic: eliminate a row 
     bool isOutOfGround(vec2 position);
     bool hasBrick(vec2 position);
     bool isAvailable(vec2 position);

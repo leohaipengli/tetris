@@ -106,12 +106,10 @@ void onShapeFinish() {
     }
     ground.dropAllBricksAboveFromRow(bottomEliminatedRow);
     // if game is not over
-    // FIXME: change the init position of shape & use random color
-    if(ground.newShape(vec2(NUM_COLS/2, NUM_ROWS-2), randomColor())) {
-        // TODO: if new shape can be generated
+    if(ground.newShape(vec2(NUM_COLS/2, NUM_ROWS-1), randomColor())) {
+        // do nothing
 
     } else {
-        // TODO: if the game is over: 
         cout << "Game Over" << endl;
         stopGame();
     }
@@ -145,7 +143,6 @@ void updateColors() {
         for(int j = 0; j < NUM_ROWS; j++) {
             vec2 position = vec2(i, j);
             vec3 color = ground.getColor(i, j) != NULL ? *(ground.getColor(i, j)): background_color;
-        // FIXME: delete debugging info
 #ifdef DEBUG
             if(color[0] != background_color[0]) {
                 cout << "set " << position << " color: " << color << endl;
@@ -157,7 +154,7 @@ void updateColors() {
 }
 
 void autoDropDown(int foo) {
-    glutTimerFunc(700.0, autoDropDown, 0);
+    glutTimerFunc(AUTO_DROP_TIME, autoDropDown, 0);
     if(!gameStatus) {
         return;
     }
@@ -184,23 +181,19 @@ void onSpecialKeyPressed(int key, int x, int y) {
     switch ( key ) {
     case GLUT_KEY_UP:
         success = ground.rotateShape();
-        cout << "up\n";
         break;
     case GLUT_KEY_DOWN:
         //do something here
         while(ground.moveShape('d')) {}
         onShapeFinish();
-        cout << "down\n";
         break;
     case GLUT_KEY_LEFT:
         //do something here
         success = ground.moveShape('l');
-        cout << "left\n";
         break;
     case GLUT_KEY_RIGHT:
         //do something here
         success = ground.moveShape('r');
-        cout << "right\n";
         break;
     }
 

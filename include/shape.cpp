@@ -49,7 +49,6 @@ vector<vec2> Shape::getNewPositionsRotation() {
     return new_positions;
 }
 
-// TODO: how to deal with the strange floating number when the result is 0?
 void Shape::rotate() {
     // not use rotation matrix to rotate.
     // since only rotate 90 degree, write the code directly

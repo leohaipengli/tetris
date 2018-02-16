@@ -169,7 +169,6 @@ void updateBricks() {
                            BUFFER_OFFSET(sizeof(vec3) * gl_brick_points.size()));
 
 }
-// TODO: bugs
 void drawGameover(void) {
 
     glUseProgram(program_gameover);
@@ -178,7 +177,6 @@ void drawGameover(void) {
     glDrawElements(GL_TRIANGLES, sizeof(gl_gameover_elements), GL_UNSIGNED_INT, 0);
     
 
-    // TODO: try mipmaps
     // Note that you do have to load the texture image itself before mipmaps can be generated from it.
     // glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -198,7 +196,6 @@ void drawGame(void) {
 
     //Draw lines using the second vertex array object. On your tetris code, you probabily want to draw the lines first, then the triangles.
     //If you want to change the thickness of the lines, this is how:  glLineWidth(5.0);    
-    // FIXME:
     glBindVertexArray( vao_grids );
     glDrawArrays( GL_LINES, 0, gl_grid_points.size());
 
@@ -242,7 +239,7 @@ int main(int argc, char **argv) {
     glutKeyboardFunc( onKeyPressed );
     glutSpecialFunc( onSpecialKeyPressed );
 
-    glutTimerFunc(700.0, autoDropDown, 0);
+    glutTimerFunc(AUTO_DROP_TIME, autoDropDown, 0);
 
     glutMainLoop();
     return 0;
