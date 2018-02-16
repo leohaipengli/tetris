@@ -11,10 +11,77 @@ using namespace std;
 GLuint vao_bricks, vao_grids, vao_gameover;
 
 
-GLuint program;
+GLuint program, program_gameover;
+void deleteBMPData(unsigned char* data);
+unsigned char* loadBMPData(const char *imagepath, unsigned int& width, unsigned int& height);
 
+void initGameover(void) {
+
+    // Create Vertex Array Object
+    glGenVertexArrays(1, &vao_gameover);
+    glBindVertexArray(vao_gameover);
+
+    // Create a Vertex Buffer Object and copy the vertex data to it
+    GLuint vbo_gameover;
+    glGenBuffers(1, &vbo_gameover);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_gameover);
+
+    // buffer data
+    glBufferData( GL_ARRAY_BUFFER, sizeof(gl_gameover_vertices) + sizeof(gl_gameover_colors) + sizeof(gl_gameover_tex_positions),
+        gl_gameover_vertices, GL_STREAM_DRAW );
+
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(gl_gameover_vertices), gl_gameover_vertices);
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(gl_gameover_vertices), sizeof(gl_gameover_colors), gl_gameover_colors);
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(gl_gameover_vertices) + sizeof(gl_gameover_colors), sizeof(gl_gameover_tex_positions),
+        gl_gameover_tex_positions);
+
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(gl_gameover_elements), gl_gameover_elements, GL_STATIC_DRAW);
+    
+
+    program_gameover = InitShader("texturevshader.glsl", "texturefshader.glsl");
+    glUseProgram(program_gameover);
+    // specify the position of vertices, colors and textures in the buffer
+    GLuint vPosition = glGetAttribLocation( program_gameover, "vPosition" );
+    glEnableVertexAttribArray(vPosition);
+    glVertexAttribPointer( vPosition, 2, GL_FLOAT, GL_FALSE, 0,
+                           BUFFER_OFFSET(0) );
+    GLuint vColor = glGetAttribLocation( program_gameover, "vColor" );
+    glEnableVertexAttribArray(vColor);
+    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0,
+                           BUFFER_OFFSET(sizeof(gl_gameover_vertices)) );
+    GLuint vTexPosition = glGetAttribLocation( program_gameover, "vTexPosition" );
+    glEnableVertexAttribArray(vTexPosition);
+    glVertexAttribPointer(vTexPosition, 2, GL_FLOAT, GL_FALSE, 0,
+                           BUFFER_OFFSET(sizeof(gl_gameover_colors) + sizeof(gl_gameover_vertices)));
+                           
+    // genetate tex object (same as VAO)
+    GLuint tex;
+    glGenTextures(1, &tex);
+
+    // Just like other objects, textures have to be bound to apply operations to them. Since images are 2D arrays of pixels, it will be bound to the GL_TEXTURE_2D target.
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    // Give the image to OpenGL
+    unsigned width, height;
+    unsigned char *data = loadBMPData(GAMEOVER_FILEPATH, width, height);
+    if(data == NULL) {
+        cerr << "Error Loading BMP file!\n";
+        return;
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+    
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    delete[] data;
+
+}
 void myInit(void) {
     startGame();
+    initGameover();
     glGenVertexArrays( 1, &vao_grids );
     glBindVertexArray( vao_grids );
 
@@ -102,6 +169,85 @@ void updateBricks() {
                            BUFFER_OFFSET(sizeof(vec3) * gl_brick_points.size()));
 
 }
+// TODO: bugs
+void drawGameover(void) {
+
+    glUseProgram(program_gameover);
+    glBindVertexArray( vao_gameover );
+    // glDrawArrays( GL_TRIANGLES, 0, gl_brick_points.size());
+    glDrawElements(GL_TRIANGLES, sizeof(gl_gameover_elements), GL_UNSIGNED_INT, 0);
+    
+
+    // TODO: try mipmaps
+    // Note that you do have to load the texture image itself before mipmaps can be generated from it.
+    // glGenerateMipmap(GL_TEXTURE_2D);
+
+
+
+}
+void drawGame(void) {
+    // since we use different program, we should switch before drawing
+    glUseProgram(program);
+    updateBricks();
+
+    //Draw triangles
+    //Here we are binding back the first vertex array object. Now we can acess all the buffers associated to it and render accordingly
+    glBindVertexArray( vao_bricks );
+    // glDrawArrays( GL_TRIANGLES, 0, gl_brick_points.size());
+    glDrawElements(GL_TRIANGLES, gl_brick_elements.size(), GL_UNSIGNED_INT, 0);
+
+    //Draw lines using the second vertex array object. On your tetris code, you probabily want to draw the lines first, then the triangles.
+    //If you want to change the thickness of the lines, this is how:  glLineWidth(5.0);    
+    // FIXME:
+    glBindVertexArray( vao_grids );
+    glDrawArrays( GL_LINES, 0, gl_grid_points.size());
+
+    //Causes all issued commands to be executed as quickly as they are accepted by the actual rendering engine
+}
+void display(void) {
+    glClear( GL_COLOR_BUFFER_BIT );     // clear the window
+    // draw game whether game is over
+    drawGame();
+    glFlush();
+    if(!gameStatus) {
+        // draw game over image if game is over
+        drawGameover();
+    }
+    glFlush();
+}
+
+//----------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------
+
+int main(int argc, char **argv) {
+    glutInit( &argc, argv );
+    glutInitDisplayMode( GLUT_RGBA );
+    glutInitWindowSize( NUM_COLS * GRID_SIZE, NUM_ROWS * GRID_SIZE );
+
+    // If you are using freeglut, the next two lines will check if 
+    // the code is truly 3.2. Otherwise, comment them out
+    glutInitContextVersion( 3, 2 );
+    glutInitContextProfile( GLUT_CORE_PROFILE );
+
+    glutCreateWindow( "Tetris" );
+
+    // Iff you get a segmentation error at line 34, please uncomment the line below
+    glewExperimental = GL_TRUE; 
+    glewInit();
+
+    myInit();
+
+    glutDisplayFunc( display );
+    glutKeyboardFunc( onKeyPressed );
+    glutSpecialFunc( onSpecialKeyPressed );
+
+    glutTimerFunc(700.0, autoDropDown, 0);
+
+    glutMainLoop();
+    return 0;
+}
+
 void deleteBMPData(unsigned char* data) {
     delete[] data;
 }
@@ -141,144 +287,4 @@ unsigned char* loadBMPData(const char *imagepath, unsigned int& width, unsigned 
     //Everything is in memory now, the file can be closed
     fclose(file);
     return data;
-}
-// TODO: bugs
-void initGameover(void) {
-
-    // Create Vertex Array Object
-    glGenVertexArrays(1, &vao_gameover);
-    glBindVertexArray(vao_gameover);
-
-    // Create a Vertex Buffer Object and copy the vertex data to it
-    GLuint vbo_gameover;
-    glGenBuffers(1, &vbo_gameover);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_gameover);
-
-    // buffer data
-    glBufferData( GL_ARRAY_BUFFER, sizeof(gl_gameover_vertices) + sizeof(gl_gameover_colors) + sizeof(gl_gameover_tex_positions),
-        gl_gameover_vertices, GL_STREAM_DRAW );
-
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(gl_gameover_vertices), gl_gameover_vertices);
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(gl_gameover_vertices), sizeof(gl_gameover_colors), gl_gameover_colors);
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(gl_gameover_vertices) + sizeof(gl_gameover_colors), sizeof(gl_gameover_tex_positions),
-        gl_gameover_tex_positions);
-
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(gl_gameover_elements), gl_gameover_elements, GL_STATIC_DRAW);
-    
-
-    GLuint texProgram = InitShader("texturevshader.glsl", "texturefshader.glsl");
-    // specify the position of vertices, colors and textures in the buffer
-    GLuint vPosition = glGetAttribLocation( texProgram, "vPosition" );
-    glEnableVertexAttribArray(vPosition);
-    glVertexAttribPointer( vPosition, 2, GL_FLOAT, GL_FALSE, 0,
-                           BUFFER_OFFSET(0) );
-    GLuint vColor = glGetAttribLocation( texProgram, "vColor" );
-    glEnableVertexAttribArray(vColor);
-    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0,
-                           BUFFER_OFFSET(sizeof(gl_gameover_vertices)) );
-    GLuint vTexPosition = glGetAttribLocation( texProgram, "vTexPosition" );
-    glEnableVertexAttribArray(vTexPosition);
-    glVertexAttribPointer(vTexPosition, 2, GL_FLOAT, GL_FALSE, 0,
-                           BUFFER_OFFSET(sizeof(gl_gameover_colors) + sizeof(gl_gameover_vertices)));
-                           
-    // genetate tex object (same as VAO)
-    GLuint tex;
-    glGenTextures(1, &tex);
-
-    // Just like other objects, textures have to be bound to apply operations to them. Since images are 2D arrays of pixels, it will be bound to the GL_TEXTURE_2D target.
-    glBindTexture(GL_TEXTURE_2D, tex);
-
-    // Give the image to OpenGL
-    unsigned width, height;
-    unsigned char *data = loadBMPData(GAMEOVER_FILEPATH, width, height);
-    if(data == NULL) {
-        cerr << "Error Loading BMP file!\n";
-        return;
-    }
-
-    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    delete[] data;
-
-}
-void drawGameover(void) {
-
-    initGameover();
-    glBindVertexArray( vao_gameover );
-    // glDrawArrays( GL_TRIANGLES, 0, gl_brick_points.size());
-    glDrawElements(GL_TRIANGLES, sizeof(gl_gameover_elements), GL_UNSIGNED_INT, 0);
-    
-
-    // TODO: try mipmaps
-    // Note that you do have to load the texture image itself before mipmaps can be generated from it.
-    // glGenerateMipmap(GL_TEXTURE_2D);
-
-
-
-}
-void drawGame(void) {
-    updateBricks();
-
-    glClear( GL_COLOR_BUFFER_BIT );     // clear the window
-    
-
-    //Draw triangles
-    //Here we are binding back the first vertex array object. Now we can acess all the buffers associated to it and render accordingly
-    glBindVertexArray( vao_bricks );
-    // glDrawArrays( GL_TRIANGLES, 0, gl_brick_points.size());
-    glDrawElements(GL_TRIANGLES, gl_brick_elements.size(), GL_UNSIGNED_INT, 0);
-
-    //Draw lines using the second vertex array object. On your tetris code, you probabily want to draw the lines first, then the triangles.
-    //If you want to change the thickness of the lines, this is how:  glLineWidth(5.0);    
-    // FIXME:
-    glBindVertexArray( vao_grids );
-    glDrawArrays( GL_LINES, 0, gl_grid_points.size());
-
-    //Causes all issued commands to be executed as quickly as they are accepted by the actual rendering engine
-}
-void display(void) {
-    // draw game whether game is over
-    drawGame();
-    if(!gameStatus) {
-        // draw game over image if game is over
-        drawGameover();
-    }
-    glFlush();
-}
-
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-
-int main(int argc, char **argv) {
-    glutInit( &argc, argv );
-    glutInitDisplayMode( GLUT_RGBA );
-    glutInitWindowSize( NUM_COLS * GRID_SIZE, NUM_ROWS * GRID_SIZE );
-
-    // If you are using freeglut, the next two lines will check if 
-    // the code is truly 3.2. Otherwise, comment them out
-    glutInitContextVersion( 3, 2 );
-    glutInitContextProfile( GLUT_CORE_PROFILE );
-
-    glutCreateWindow( "Tetris" );
-
-    // Iff you get a segmentation error at line 34, please uncomment the line below
-    glewExperimental = GL_TRUE; 
-    glewInit();
-
-    myInit();
-
-    glutDisplayFunc( display );
-    glutKeyboardFunc( onKeyPressed );
-    glutSpecialFunc( onSpecialKeyPressed );
-
-    glutTimerFunc(700.0, autoDropDown, 0);
-
-    glutMainLoop();
-    return 0;
 }

@@ -11,10 +11,10 @@ vector<GLint> gl_brick_elements;
 vector<vec3> gl_brick_colors;
 float gl_gameover_vertices[] = {
 //  Position(2)   Color(3)          Texcoords(2)
-    -0.5f,  0.5f, // Top-left
-    0.5f,  0.5f, // Top-right
-    0.5f, -0.5f, // Bottom-right
-    -0.5f, -0.5f, // Bottom-left
+    -1,  0.5f, // Top-left
+    1,  0.5f, // Top-right
+    1, -0.5f, // Bottom-right
+    -1, -0.5f, // Bottom-left
 };
 float gl_gameover_colors[] = {
     1.0f, 0.0f, 0.0f,
@@ -23,10 +23,10 @@ float gl_gameover_colors[] = {
     1.0f, 1.0f, 1.0f,
 };
 float gl_gameover_tex_positions[] = {
-    0.0f, 0.0f,
-    1.0f, 0.0f, 
-    1.0f, 1.0f,
     0.0f, 1.0f, 
+    1.0f, 1.0f,
+    1.0f, 0.0f, 
+    0.0f, 0.0f,
 };
 GLuint gl_gameover_elements[] = {
     0, 1, 2,
