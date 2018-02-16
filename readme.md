@@ -1,4 +1,4 @@
-# Classic Tetris by C++ & OpenGL
+# Classical Tetris Game by C++ & OpenGL
 ## requirement
 - c++ 11
 - opengl 3.2
@@ -9,8 +9,8 @@
 - `make clean` & `make clean_object` to clean.
 ## run
 - run `tetris` that will be generated after compilation.
+<img src="./src/demo.png" width="40%" />
 
-![demo](./src/demo.png)
 ## control
 - arrow key to move/rotate
 - `r` to restart game
