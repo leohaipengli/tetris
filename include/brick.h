@@ -2,8 +2,8 @@
 #define _BRICK_H_
 
 #include "Angel.h"
-// #include "vec.h"
-// #include "mat.h"
+#include "vec.h"
+#include "mat.h"
 #include "config.h"
 
 class Brick {

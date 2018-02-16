@@ -3,6 +3,7 @@
 in  vec2 vPosition;
 in  vec3 vColor;
 out vec4 color;
+in vec2 vTexPosition;
 out vec2 texPosition;
 
 void main() {
@@ -11,4 +12,5 @@ void main() {
     gl_Position = vec4(vPosition, 0, 1);
     // output any data the fragment shader requires. 
     color = vec4( vColor, 1.0 );
+    texPosition = vTexPosition;
 }

@@ -8,7 +8,7 @@
 using namespace std;
 
 // VAO
-GLuint vao_bricks, vao_grids;
+GLuint vao_bricks, vao_grids, vao_gameover;
 
 
 GLuint program;
@@ -102,9 +102,124 @@ void updateBricks() {
                            BUFFER_OFFSET(sizeof(vec3) * gl_brick_points.size()));
 
 }
-void display(void) {
-    cout << "display() is called" << endl;
+void deleteBMPData(unsigned char* data) {
+    delete[] data;
+}
 
+unsigned char* loadBMPData(const char *imagepath, unsigned int& width, unsigned int& height) {
+    // Data read from the header of the BMP file
+    unsigned char header[54]; // Each BMP file begins by a 54-bytes header
+    unsigned int dataPos;     // Position in the file where the actual data begins
+    unsigned int imageSize;   // = width*height*3
+    // Actual RGB data
+    unsigned char * data;
+    // Open the file
+    FILE * file = fopen(imagepath,"rb");
+    if (!file){printf("Image could not be opened\n"); return 0;}
+    if ( fread(header, 1, 54, file)!=54 ){ // If not 54 bytes read : problem
+        printf("Not a correct BMP file\n");
+        return NULL;
+    }
+    if ( header[0]!='B' || header[1]!='M' ){
+        printf("Not a correct BMP file\n");
+            return NULL;
+    }
+    // Read ints from the byte array
+    dataPos    = *(int*)&(header[0x0A]);
+    imageSize  = *(int*)&(header[0x22]);
+    width      = *(int*)&(header[0x12]);
+    height     = *(int*)&(header[0x16]);
+    // Some BMP files are misformatted, guess missing information
+    if (imageSize==0)    imageSize=width*height*3; // 3 : one byte for each Red, Green and Blue component
+    if (dataPos==0)      dataPos=54; // The BMP header is done that way
+    // Create a buffer
+    data = new unsigned char [imageSize];
+
+    // Read the actual data from the file into the buffer
+    fread(data,1,imageSize,file);
+
+    //Everything is in memory now, the file can be closed
+    fclose(file);
+    return data;
+}
+void initGameover(void) {
+
+    // Create Vertex Array Object
+    glGenVertexArrays(1, &vao_gameover);
+    glBindVertexArray(vao_gameover);
+
+    // Create a Vertex Buffer Object and copy the vertex data to it
+    GLuint vbo_gameover;
+    glGenBuffers(1, &vbo_gameover);
+
+    // buffer data
+    glBufferData( GL_ARRAY_BUFFER, sizeof(gl_gameover_vertices) + sizeof(gl_gameover_colors) + sizeof(gl_gameover_tex_positions),
+        gl_gameover_vertices, GL_STREAM_DRAW );
+
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(gl_gameover_vertices), gl_gameover_vertices);
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(gl_gameover_vertices), sizeof(gl_gameover_colors), gl_gameover_colors);
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(gl_gameover_vertices) + sizeof(gl_gameover_colors), sizeof(gl_gameover_tex_positions),
+        gl_gameover_tex_positions);
+
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(gl_gameover_elements), gl_gameover_elements, GL_STATIC_DRAW);
+    
+
+    GLuint texProgram = InitShader("texturevshader.glsl", "texturefshader.glsl");
+    // specify the position of vertices, colors and textures in the buffer
+    GLuint vPosition = glGetAttribLocation( texProgram, "vPosition" );
+    glEnableVertexAttribArray(vPosition);
+    glVertexAttribPointer( vPosition, 2, GL_FLOAT, GL_FALSE, 0,
+                           BUFFER_OFFSET(0) );
+    GLuint vColor = glGetAttribLocation( texProgram, "vColor" );
+    glEnableVertexAttribArray(vColor);
+    glVertexAttribPointer(vColor, 3, GL_FLOAT, GL_FALSE, 0,
+                           BUFFER_OFFSET(sizeof(gl_gameover_vertices)) );
+    GLuint vTexPosition = glGetAttribLocation( texProgram, "vTexPosition" );
+    glEnableVertexAttribArray(vTexPosition);
+    glVertexAttribPointer(vTexPosition, 2, GL_FLOAT, GL_FALSE, 0,
+                           BUFFER_OFFSET(sizeof(gl_gameover_colors) + sizeof(gl_gameover_vertices)));
+                           
+    // genetate tex object (same as VAO)
+    GLuint tex;
+    glGenTextures(1, &tex);
+
+    // Just like other objects, textures have to be bound to apply operations to them. Since images are 2D arrays of pixels, it will be bound to the GL_TEXTURE_2D target.
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    // Give the image to OpenGL
+    unsigned width, height;
+    unsigned char *data = loadBMPData(GAMEOVER_FILEPATH, width, height);
+    if(data == NULL) {
+        cerr << "Error Loading BMP file!\n";
+        return;
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    delete[] data;
+
+}
+void drawGameover(void) {
+
+    initGameover();
+    glBindVertexArray( vao_gameover );
+    // glDrawArrays( GL_TRIANGLES, 0, gl_brick_points.size());
+    glDrawElements(GL_TRIANGLES, sizeof(gl_gameover_elements), GL_UNSIGNED_INT, 0);
+    
+
+    // TODO: try mipmaps
+    // Note that you do have to load the texture image itself before mipmaps can be generated from it.
+    // glGenerateMipmap(GL_TEXTURE_2D);
+
+
+
+}
+void drawGame(void) {
     updateBricks();
 
     glClear( GL_COLOR_BUFFER_BIT );     // clear the window
@@ -124,6 +239,14 @@ void display(void) {
 
     //Causes all issued commands to be executed as quickly as they are accepted by the actual rendering engine
     glFlush();
+}
+void display(void) {
+    // draw game whether game is over
+    drawGame();
+    if(!gameStatus) {
+        // draw game over image if game is over
+        drawGameover();
+    }
 }
 
 //----------------------------------------------------------------------------

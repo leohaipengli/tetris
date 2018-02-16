@@ -9,7 +9,29 @@ vector<vec3> gl_grid_colors;
 vector<vec2> gl_brick_points;
 vector<GLint> gl_brick_elements;
 vector<vec3> gl_brick_colors;
-vector<vec2> gl_gameover_points;
+float gl_gameover_vertices[] = {
+//  Position(2)   Color(3)          Texcoords(2)
+    -0.5f,  0.5f, // Top-left
+    0.5f,  0.5f, // Top-right
+    0.5f, -0.5f, // Bottom-right
+    -0.5f, -0.5f, // Bottom-left
+};
+float gl_gameover_colors[] = {
+    1.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 
+    0.0f, 0.0f, 1.0f, 
+    1.0f, 1.0f, 1.0f,
+};
+float gl_gameover_tex_positions[] = {
+    0.0f, 0.0f,
+    1.0f, 0.0f, 
+    1.0f, 1.0f,
+    0.0f, 1.0f, 
+};
+GLuint gl_gameover_elements[] = {
+    0, 1, 2,
+    2, 3, 0
+};
 
 void initGrids() {
     // insert vertical grid points
@@ -63,66 +85,6 @@ void initColors() {
         gl_brick_colors[i] = vec3(background_color);
     }
 }
-GLuint loadBMP_custom(const char *imagepath) {
-    // Data read from the header of the BMP file
-    unsigned char header[54]; // Each BMP file begins by a 54-bytes header
-    unsigned int dataPos;     // Position in the file where the actual data begins
-    unsigned int width, height;
-    unsigned int imageSize;   // = width*height*3
-    // Actual RGB data
-    unsigned char * data;
-    // Open the file
-    FILE * file = fopen(imagepath,"rb");
-    if (!file){printf("Image could not be opened\n"); return 0;}
-    if ( fread(header, 1, 54, file)!=54 ){ // If not 54 bytes read : problem
-        printf("Not a correct BMP file\n");
-        return false;
-    }
-    if ( header[0]!='B' || header[1]!='M' ){
-        printf("Not a correct BMP file\n");
-            return 0;
-    }
-    // Read ints from the byte array
-dataPos    = *(int*)&(header[0x0A]);
-imageSize  = *(int*)&(header[0x22]);
-width      = *(int*)&(header[0x12]);
-height     = *(int*)&(header[0x16]);
-// Some BMP files are misformatted, guess missing information
-if (imageSize==0)    imageSize=width*height*3; // 3 : one byte for each Red, Green and Blue component
-if (dataPos==0)      dataPos=54; // The BMP header is done that way
-// Create a buffer
-data = new unsigned char [imageSize];
-
-// Read the actual data from the file into the buffer
-fread(data,1,imageSize,file);
-
-//Everything is in memory now, the file can be closed
-fclose(file);
-
-// Create one OpenGL texture
-GLuint textureID;
-glGenTextures(1, &textureID);
-
-// "Bind" the newly created texture : all future texture functions will modify this texture
-glBindTexture(GL_TEXTURE_2D, textureID);
-
-// Give the image to OpenGL
-glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
-
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-}
-
-void initGameover() {
-    // points of the rectangle
-    gl_gameover_points.resize(4);
-    gl_gameover_points[0] = vec2(-0.5, -0.5);
-    gl_gameover_points[1] = vec2(0.5, -0.5);
-    gl_gameover_points[2] = vec2(-0.5, 0.5);
-    gl_gameover_points[3] = vec2(0.5, 0.5);
-    // gameover bmp file
-    // GLuint loadBMP_custom("src/gameover.bmp");
-}
 
 vec3 randomColor() {
     return vec3(
@@ -143,7 +105,7 @@ void onShapeFinish() {
         }
     }
     ground.dropAllBricksAboveFromRow(bottomEliminatedRow);
-// if game is not over
+    // if game is not over
     // FIXME: change the init position of shape & use random color
     if(ground.newShape(vec2(NUM_COLS/2, NUM_ROWS-2), randomColor())) {
         // TODO: if new shape can be generated
@@ -155,7 +117,6 @@ void onShapeFinish() {
     }
 }
 
-// FIXME: bugs here!
 void setBrickColor(vec2 position, vec3 color_vector) {
     int i = 4 * vec2ToInt(position);
     if(i < 4 * NUM_COLS * NUM_ROWS && i >= 0) {
@@ -167,7 +128,6 @@ void setBrickColor(vec2 position, vec3 color_vector) {
     }
 }
 
-// FIXME: debug: print 1 if not background color
 void printColors() {
     for(int j = NUM_ROWS - 1; j >= 0; j--) {
         for(int i = 0; i < NUM_COLS; i++) {
@@ -287,8 +247,8 @@ void stopGame() {
         return;
     }
     gameStatus = false;
-    // clear all bricks
-    // ground.clear();
+    // refresh the screen to display gameover
+    glutPostRedisplay();
 }
 
 void restartGame() {

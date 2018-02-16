@@ -1,9 +1,9 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
+#include "config.h"
 #include "vec.h"
 #include "mat.h"
-#include "config.h"
 
 inline int vec2ToInt(vec2 coordinate) {
     return coordinate[0] + NUM_COLS * coordinate[1];

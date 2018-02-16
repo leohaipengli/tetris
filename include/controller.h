@@ -14,6 +14,10 @@ extern vector<vec3> gl_grid_colors;
 extern vector<vec2> gl_brick_points;
 extern vector<GLint> gl_brick_elements;
 extern vector<vec3> gl_brick_colors;
+extern float gl_gameover_vertices[8];
+extern float gl_gameover_colors[12];
+extern float gl_gameover_tex_positions[12];
+extern GLuint gl_gameover_elements[6];
 
 
 // connect the game logic and the graphic logic
