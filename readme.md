@@ -9,6 +9,7 @@
 - `make clean` & `make clean_object` to clean.
 ## run
 - run `tetris` that will be generated after compilation.
+
 ![demo](./src/demo.png)
 ## control
 - arrow key to move/rotate
