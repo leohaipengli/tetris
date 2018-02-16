@@ -142,6 +142,7 @@ unsigned char* loadBMPData(const char *imagepath, unsigned int& width, unsigned 
     fclose(file);
     return data;
 }
+// TODO: bugs
 void initGameover(void) {
 
     // Create Vertex Array Object
@@ -151,6 +152,7 @@ void initGameover(void) {
     // Create a Vertex Buffer Object and copy the vertex data to it
     GLuint vbo_gameover;
     glGenBuffers(1, &vbo_gameover);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_gameover);
 
     // buffer data
     glBufferData( GL_ARRAY_BUFFER, sizeof(gl_gameover_vertices) + sizeof(gl_gameover_colors) + sizeof(gl_gameover_tex_positions),
@@ -238,7 +240,6 @@ void drawGame(void) {
     glDrawArrays( GL_LINES, 0, gl_grid_points.size());
 
     //Causes all issued commands to be executed as quickly as they are accepted by the actual rendering engine
-    glFlush();
 }
 void display(void) {
     // draw game whether game is over
@@ -247,6 +248,7 @@ void display(void) {
         // draw game over image if game is over
         drawGameover();
     }
+    glFlush();
 }
 
 //----------------------------------------------------------------------------
